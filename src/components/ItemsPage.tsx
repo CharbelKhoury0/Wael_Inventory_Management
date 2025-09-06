@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { useTheme, useWarehouse } from '../App';
 import Sidebar from './Sidebar';
 import TopNav from './TopNav';
-import { Search, Plus, Package, MapPin, Filter, Edit, Trash2, X } from 'lucide-react';
+import { Search, Plus, Package, MapPin, Filter, Edit, Trash2, X, Building } from 'lucide-react';
 
 interface ItemsPageProps {
   onLogout: () => void;
@@ -23,6 +24,8 @@ const ItemsPage: React.FC<ItemsPageProps> = ({ onLogout, onPageChange }) => {
   const [showAddModal, setShowAddModal] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const { isDark } = useTheme();
+  const { currentWarehouse, warehouseData } = useWarehouse();
 
   const [items, setItems] = useState<Item[]>([
     {
@@ -163,7 +166,7 @@ const ItemsPage: React.FC<ItemsPageProps> = ({ onLogout, onPageChange }) => {
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className={`flex h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <Sidebar 
         isOpen={sidebarOpen} 
         onClose={() => setSidebarOpen(false)}
@@ -175,17 +178,32 @@ const ItemsPage: React.FC<ItemsPageProps> = ({ onLogout, onPageChange }) => {
         <TopNav 
           onMenuClick={() => setSidebarOpen(true)}
           onLogout={onLogout}
+          onPageChange={onPageChange}
         />
         
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 px-4 py-6 md:px-6">
+        <main className={`flex-1 overflow-x-hidden overflow-y-auto ${isDark ? 'bg-gray-900' : 'bg-gray-50'} px-4 py-6 md:px-6`}>
           <div className="max-w-7xl mx-auto">
             <div className="mb-8">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Items Management</h1>
-              <p className="text-gray-600">Manage your warehouse inventory items and stock levels</p>
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
+                <div>
+                  <h1 className={`text-2xl md:text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-2`}>Items Management</h1>
+                  <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Manage your warehouse inventory items and stock levels</p>
+                </div>
+                <div className={`mt-4 lg:mt-0 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg border p-4`}>
+                  <div className="flex items-center mb-2">
+                    <Building className={`h-4 w-4 ${isDark ? 'text-blue-400' : 'text-blue-600'} mr-2`} />
+                    <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Current Location</span>
+                  </div>
+                  <div>
+                    <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{currentWarehouse}</p>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{warehouseData.address}</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Search and Filter Bar */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl shadow-sm border p-6 mb-6`}>
               <div className="flex flex-col lg:flex-row gap-4">
                 <div className="flex-1 relative">
                   <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-5 w-5 text-gray-400" />
@@ -194,14 +212,14 @@ const ItemsPage: React.FC<ItemsPageProps> = ({ onLogout, onPageChange }) => {
                     placeholder="Search items by name or SKU..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={`w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'}`}
                   />
                 </div>
                 <div className="flex gap-3">
                   <select
                     value={selectedCategory}
                     onChange={(e) => setSelectedCategory(e.target.value)}
-                    className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={`px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                   >
                     {categories.map(category => (
                       <option key={category} value={category}>{category}</option>
@@ -219,67 +237,67 @@ const ItemsPage: React.FC<ItemsPageProps> = ({ onLogout, onPageChange }) => {
             </div>
 
             {/* Items Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-semibold text-gray-900">Inventory Items</h2>
-                <p className="text-sm text-gray-500">Total items: {filteredItems.length}</p>
+            <div className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl shadow-sm border`}>
+              <div className={`px-6 py-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+                <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Inventory Items</h2>
+                <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Total items: {filteredItems.length}</p>
               </div>
 
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50">
+                  <thead className={`${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
                         SKU
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
                         Item Name
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
                         Quantity
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
                         Location
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
                         Category
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
                         Status
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className={`${isDark ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'} divide-y`}>
                     {filteredItems.map((item) => {
                       const stockStatus = getStockStatus(item.quantity, item.minStock);
                       return (
-                        <tr key={item.id} className="hover:bg-gray-50 transition-colors">
+                        <tr key={item.id} className={`transition-colors ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-medium text-gray-900">{item.sku}</div>
+                            <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{item.sku}</div>
                           </td>
                           <td className="px-6 py-4">
                             <div className="flex items-center">
-                              <div className="bg-blue-50 p-2 rounded-lg mr-3">
+                              <div className={`p-2 rounded-lg mr-3 ${isDark ? 'bg-blue-900/30' : 'bg-blue-50'}`}>
                                 <Package className="h-4 w-4 text-blue-600" />
                               </div>
-                              <div className="text-sm font-medium text-gray-900">{item.name}</div>
+                              <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{item.name}</div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm font-semibold text-gray-900">{item.quantity}</div>
-                            <div className="text-xs text-gray-500">Min: {item.minStock}</div>
+                            <div className={`text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{item.quantity}</div>
+                            <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Min: {item.minStock}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center text-sm text-gray-900">
-                              <MapPin className="h-4 w-4 mr-1 text-gray-400" />
+                            <div className={`flex items-center text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                              <MapPin className={`h-4 w-4 mr-1 ${isDark ? 'text-gray-400' : 'text-gray-400'}`} />
                               {item.location}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="text-sm text-gray-900">{item.category}</div>
+                            <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{item.category}</div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${stockStatus.color}`}>
@@ -310,12 +328,12 @@ const ItemsPage: React.FC<ItemsPageProps> = ({ onLogout, onPageChange }) => {
       {/* Add Item Modal */}
       {showAddModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Add New Item</h3>
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl max-w-md w-full`}>
+            <div className={`flex items-center justify-between p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
+              <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Add New Item</h3>
               <button
                 onClick={() => setShowAddModal(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className={`transition-colors ${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'}`}
               >
                 <X className="h-6 w-6" />
               </button>
@@ -323,36 +341,36 @@ const ItemsPage: React.FC<ItemsPageProps> = ({ onLogout, onPageChange }) => {
             
             <form onSubmit={handleAddItem} className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">SKU</label>
+                <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>SKU</label>
                 <input
                   type="text"
                   value={newItem.sku}
                   onChange={(e) => setNewItem({ ...newItem, sku: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'}`}
                   placeholder="e.g., SH-011"
                   required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Item Name</label>
+                <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Item Name</label>
                 <input
                   type="text"
                   value={newItem.name}
                   onChange={(e) => setNewItem({ ...newItem, name: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'}`}
                   placeholder="e.g., Safety Goggles"
                   required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Initial Quantity</label>
+                <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Initial Quantity</label>
                 <input
                   type="number"
                   value={newItem.quantity}
                   onChange={(e) => setNewItem({ ...newItem, quantity: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'}`}
                   placeholder="e.g., 100"
                   min="0"
                   required
@@ -360,23 +378,23 @@ const ItemsPage: React.FC<ItemsPageProps> = ({ onLogout, onPageChange }) => {
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Location</label>
+                <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Location</label>
                 <input
                   type="text"
                   value={newItem.location}
                   onChange={(e) => setNewItem({ ...newItem, location: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isDark ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'}`}
                   placeholder="e.g., A-01-20"
                   required
                 />
               </div>
               
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Category</label>
+                <label className={`block text-sm font-medium mb-2 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Category</label>
                 <select
                   value={newItem.category}
                   onChange={(e) => setNewItem({ ...newItem, category: e.target.value })}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                   required
                 >
                   <option value="">Select Category</option>
@@ -390,7 +408,7 @@ const ItemsPage: React.FC<ItemsPageProps> = ({ onLogout, onPageChange }) => {
                 <button
                   type="button"
                   onClick={() => setShowAddModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className={`flex-1 px-4 py-2 border rounded-lg transition-colors ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
                 >
                   Cancel
                 </button>

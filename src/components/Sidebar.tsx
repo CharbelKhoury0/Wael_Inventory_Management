@@ -1,9 +1,12 @@
 import React from 'react';
+import { useTheme } from '../App';
 import { 
   LayoutDashboard, 
   Package, 
   ArrowRightLeft, 
   Receipt, 
+  Settings,
+  Truck,
   X,
   ChevronRight
 } from 'lucide-react';
@@ -16,16 +19,35 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, currentPage, onPageChange }) => {
+  const { isDark } = useTheme();
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', key: 'dashboard' },
     { icon: Package, label: 'Items', key: 'items' },
     { icon: ArrowRightLeft, label: 'Transactions', key: 'transactions' },
     { icon: Receipt, label: 'Receipts', key: 'receipts' },
+    { icon: Truck, label: 'Movements', key: 'movements' },
+    { icon: Settings, label: 'Settings', key: 'settings' },
   ];
 
   const handleMenuClick = (key: string) => {
     onPageChange(key);
     onClose();
+  };
+
+  const themeClasses = {
+    sidebar: isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200',
+    header: isDark ? 'border-gray-700' : 'border-gray-200',
+    title: isDark ? 'text-white' : 'text-gray-900',
+    subtitle: isDark ? 'text-gray-400' : 'text-gray-500',
+    closeButton: isDark ? 'hover:bg-gray-700 text-gray-400' : 'hover:bg-gray-100 text-gray-500',
+    menuItem: {
+      active: isDark ? 'bg-blue-900 text-blue-300' : 'bg-blue-50 text-blue-700',
+      inactive: isDark ? 'text-gray-300 hover:bg-gray-700 hover:text-white' : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+    },
+    icon: {
+      active: 'text-blue-600',
+      inactive: isDark ? 'text-gray-400 group-hover:text-gray-300' : 'text-gray-400 group-hover:text-gray-500'
+    }
   };
 
   return (
@@ -40,24 +62,24 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, currentPage, onPageC
 
       {/* Sidebar */}
       <div className={`
-        fixed lg:static inset-y-0 left-0 z-50 w-64 bg-white shadow-lg transform transition-transform duration-300 ease-in-out
+        fixed lg:static inset-y-0 left-0 z-50 w-64 ${themeClasses.sidebar} shadow-lg transform transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
       `}>
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className={`flex items-center justify-between p-6 border-b ${themeClasses.header}`}>
           <div className="flex items-center">
             <div className="bg-blue-600 p-2 rounded-lg">
               <Package className="h-6 w-6 text-white" />
             </div>
             <div className="ml-3">
-              <h2 className="text-lg font-bold text-gray-900">WarehousePro</h2>
-              <p className="text-xs text-gray-500">Inventory System</p>
+              <h2 className={`text-lg font-bold ${themeClasses.title}`}>WarehousePro</h2>
+              <p className={`text-xs ${themeClasses.subtitle}`}>Inventory System</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="lg:hidden p-1 rounded-md hover:bg-gray-100 transition-colors"
+            className={`lg:hidden p-1 rounded-md transition-colors ${themeClasses.closeButton}`}
           >
-            <X className="h-5 w-5 text-gray-500" />
+            <X className="h-5 w-5" />
           </button>
         </div>
 
@@ -70,14 +92,14 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, currentPage, onPageC
                   className={`
                     flex items-center w-full px-4 py-3 text-sm font-medium rounded-lg transition-colors duration-200 group
                     ${currentPage === item.key
-                      ? 'bg-blue-50 text-blue-700 border-r-2 border-blue-600' 
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? `${themeClasses.menuItem.active} border-r-2 border-blue-600` 
+                      : themeClasses.menuItem.inactive
                     }
                   `}
                 >
                   <item.icon className={`
                     h-5 w-5 mr-3 transition-colors
-                    ${currentPage === item.key ? 'text-blue-600' : 'text-gray-400 group-hover:text-gray-500'}
+                    ${currentPage === item.key ? themeClasses.icon.active : themeClasses.icon.inactive}
                   `} />
                   {item.label}
                   {currentPage === item.key && (

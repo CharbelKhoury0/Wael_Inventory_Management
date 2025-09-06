@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { useTheme, useWarehouse } from '../App';
 import Sidebar from './Sidebar';
 import TopNav from './TopNav';
-import { Filter, Download, Calendar, User, Package, ArrowUp, ArrowDown, RotateCcw } from 'lucide-react';
+import { Filter, Download, Calendar, User, Package, ArrowUp, ArrowDown, RotateCcw, Building } from 'lucide-react';
 
 interface TransactionsPageProps {
   onLogout: () => void;
@@ -23,6 +24,8 @@ interface Transaction {
 const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageChange }) => {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [filterType, setFilterType] = useState('All');
+  const { isDark } = useTheme();
+  const { currentWarehouse, warehouseData } = useWarehouse();
 
   const transactions: Transaction[] = [
     {
@@ -243,7 +246,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className={`flex h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <Sidebar 
         isOpen={sidebarOpen} 
         onClose={() => setSidebarOpen(false)}
@@ -255,13 +258,28 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
         <TopNav 
           onMenuClick={() => setSidebarOpen(true)}
           onLogout={onLogout}
+          onPageChange={onPageChange}
         />
         
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 px-4 py-6 md:px-6">
+        <main className={`flex-1 overflow-x-hidden overflow-y-auto ${isDark ? 'bg-gray-900' : 'bg-gray-50'} px-4 py-6 md:px-6`}>
           <div className="max-w-7xl mx-auto">
             <div className="mb-8">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Transaction History</h1>
-              <p className="text-gray-600">Track all inventory movements and adjustments</p>
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
+                <div>
+                  <h1 className={`text-2xl md:text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-2`}>Transaction History</h1>
+                  <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Track all inventory movements and adjustments</p>
+                </div>
+                <div className={`mt-4 lg:mt-0 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg border p-4`}>
+                  <div className="flex items-center mb-2">
+                    <Building className={`h-4 w-4 ${isDark ? 'text-blue-400' : 'text-blue-600'} mr-2`} />
+                    <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Warehouse Context</span>
+                  </div>
+                  <div>
+                    <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{currentWarehouse}</p>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>All transactions for this location</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Filter Bar */}

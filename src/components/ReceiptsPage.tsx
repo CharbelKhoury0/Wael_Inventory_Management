@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
+import { useTheme, useWarehouse } from '../App';
 import Sidebar from './Sidebar';
 import TopNav from './TopNav';
-import { FileText, Building, Calendar, DollarSign, Eye, Download, X, Package } from 'lucide-react';
+import { FileText, Building, Calendar, DollarSign, Eye, Download, X, Package, Truck, Container } from 'lucide-react';
 
 interface ReceiptsPageProps {
   onLogout: () => void;
@@ -26,6 +27,8 @@ interface Receipt {
 }
 
 const ReceiptsPage: React.FC<ReceiptsPageProps> = ({ onLogout, onPageChange }) => {
+  const { isDark } = useTheme();
+  const { currentWarehouse, warehouseData } = useWarehouse();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [selectedReceipt, setSelectedReceipt] = useState<Receipt | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
@@ -208,7 +211,7 @@ const ReceiptsPage: React.FC<ReceiptsPageProps> = ({ onLogout, onPageChange }) =
   };
 
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className={`flex h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <Sidebar 
         isOpen={sidebarOpen} 
         onClose={() => setSidebarOpen(false)}
@@ -220,35 +223,50 @@ const ReceiptsPage: React.FC<ReceiptsPageProps> = ({ onLogout, onPageChange }) =
         <TopNav 
           onMenuClick={() => setSidebarOpen(true)}
           onLogout={onLogout}
+          onPageChange={onPageChange}
         />
         
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 px-4 py-6 md:px-6">
+        <main className={`flex-1 overflow-x-hidden overflow-y-auto ${isDark ? 'bg-gray-900' : 'bg-gray-50'} px-4 py-6 md:px-6`}>
           <div className="max-w-7xl mx-auto">
             <div className="mb-8">
-              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">Receipts Management</h1>
-              <p className="text-gray-600">Manage purchase receipts and delivery confirmations</p>
+              <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between mb-6">
+                <div>
+                  <h1 className={`text-2xl md:text-3xl font-bold ${isDark ? 'text-white' : 'text-gray-900'} mb-2`}>Receipts Management</h1>
+                  <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Manage purchase receipts and delivery confirmations</p>
+                </div>
+                <div className={`mt-4 lg:mt-0 ${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-lg border p-4`}>
+                  <div className="flex items-center mb-2">
+                    <Building className={`h-4 w-4 ${isDark ? 'text-blue-400' : 'text-blue-600'} mr-2`} />
+                    <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Receipt Location</span>
+                  </div>
+                  <div>
+                    <p className={`text-lg font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{currentWarehouse}</p>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>All receipts for this warehouse</p>
+                  </div>
+                </div>
+              </div>
             </div>
 
             {/* Receipts Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-              <div className="px-6 py-4 border-b border-gray-200">
+            <div className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl shadow-sm border`}>
+              <div className={`px-6 py-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Receipt Records</h2>
-                    <p className="text-sm text-gray-500">Total receipts: {receipts.length}</p>
+                    <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Receipt Records</h2>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Total receipts: {receipts.length}</p>
                   </div>
                   <div className="flex items-center space-x-4 text-sm">
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                      <span className="text-gray-600">Confirmed</span>
+                      <span className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Confirmed</span>
                     </div>
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-yellow-500 rounded-full mr-2"></div>
-                      <span className="text-gray-600">Draft</span>
+                      <span className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Draft</span>
                     </div>
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-gray-500 rounded-full mr-2"></div>
-                      <span className="text-gray-600">Received</span>
+                      <span className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Received</span>
                     </div>
                   </div>
                 </div>
@@ -256,51 +274,51 @@ const ReceiptsPage: React.FC<ReceiptsPageProps> = ({ onLogout, onPageChange }) =
 
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50">
+                  <thead className={`${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
                         Receipt ID
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
                         Supplier Name
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
                         Type
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
                         Date
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
                         Amount
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
                         Status
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
                         Actions
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className={`${isDark ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'} divide-y`}>
                     {receipts.map((receipt) => (
-                      <tr key={receipt.id} className="hover:bg-gray-50 transition-colors">
+                      <tr key={receipt.id} className={`${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors`}>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <div className="bg-blue-50 p-2 rounded-lg mr-3">
                               <FileText className="h-4 w-4 text-blue-600" />
                             </div>
                             <div>
-                              <div className="text-sm font-medium text-gray-900">{receipt.id}</div>
+                              <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{receipt.id}</div>
                               {receipt.poNumber && (
-                                <div className="text-xs text-gray-500">{receipt.poNumber}</div>
+                                <div className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{receipt.poNumber}</div>
                               )}
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center">
-                            <Building className="h-4 w-4 mr-2 text-gray-400" />
-                            <div className="text-sm font-medium text-gray-900">{receipt.supplierName}</div>
+                            <Building className={`h-4 w-4 mr-2 ${isDark ? 'text-gray-400' : 'text-gray-400'}`} />
+                            <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{receipt.supplierName}</div>
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
@@ -309,13 +327,13 @@ const ReceiptsPage: React.FC<ReceiptsPageProps> = ({ onLogout, onPageChange }) =
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center text-sm text-gray-900">
-                            <Calendar className="h-4 w-4 mr-1 text-gray-400" />
+                          <div className={`flex items-center text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                            <Calendar className={`h-4 w-4 mr-1 ${isDark ? 'text-gray-400' : 'text-gray-400'}`} />
                             {receipt.date}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center text-sm font-semibold text-gray-900">
+                          <div className={`flex items-center text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
                             <DollarSign className="h-4 w-4 mr-1" />
                             {receipt.totalAmount}
                           </div>
@@ -351,15 +369,15 @@ const ReceiptsPage: React.FC<ReceiptsPageProps> = ({ onLogout, onPageChange }) =
       {/* Receipt Details Modal */}
       {showDetailsModal && selectedReceipt && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto`}>
+            <div className={`flex items-center justify-between p-6 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
               <div>
-                <h3 className="text-lg font-semibold text-gray-900">Receipt Details</h3>
-                <p className="text-sm text-gray-500">{selectedReceipt.id}</p>
+                <h3 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Receipt Details</h3>
+                <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{selectedReceipt.id}</p>
               </div>
               <button
                 onClick={() => setShowDetailsModal(false)}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
+                className={`${isDark ? 'text-gray-400 hover:text-gray-300' : 'text-gray-400 hover:text-gray-600'} transition-colors`}
               >
                 <X className="h-6 w-6" />
               </button>
@@ -369,27 +387,27 @@ const ReceiptsPage: React.FC<ReceiptsPageProps> = ({ onLogout, onPageChange }) =
               {/* Receipt Header */}
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Supplier</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Supplier</label>
                   <div className="flex items-center">
-                    <Building className="h-4 w-4 mr-2 text-gray-400" />
-                    <span className="text-sm text-gray-900">{selectedReceipt.supplierName}</span>
+                    <Building className={`h-4 w-4 mr-2 ${isDark ? 'text-gray-400' : 'text-gray-400'}`} />
+                    <span className={`text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{selectedReceipt.supplierName}</span>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Date</label>
                   <div className="flex items-center">
-                    <Calendar className="h-4 w-4 mr-2 text-gray-400" />
-                    <span className="text-sm text-gray-900">{selectedReceipt.date}</span>
+                    <Calendar className={`h-4 w-4 mr-2 ${isDark ? 'text-gray-400' : 'text-gray-400'}`} />
+                    <span className={`text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{selectedReceipt.date}</span>
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Type</label>
                   <span className={`text-sm font-semibold ${getTypeColor(selectedReceipt.type)}`}>
                     {selectedReceipt.type}
                   </span>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-1`}>Status</label>
                   <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(selectedReceipt.status)}`}>
                     {selectedReceipt.status}
                   </span>
@@ -398,29 +416,29 @@ const ReceiptsPage: React.FC<ReceiptsPageProps> = ({ onLogout, onPageChange }) =
 
               {/* Items Table */}
               <div>
-                <h4 className="text-md font-semibold text-gray-900 mb-3">Items</h4>
-                <div className="border border-gray-200 rounded-lg overflow-hidden">
+                <h4 className={`text-md font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-3`}>Items</h4>
+                <div className={`border ${isDark ? 'border-gray-700' : 'border-gray-200'} rounded-lg overflow-hidden`}>
                   <table className="w-full">
-                    <thead className="bg-gray-50">
+                    <thead className={`${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
                       <tr>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Item</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Qty</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Unit Price</th>
-                        <th className="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase">Total</th>
+                        <th className={`px-4 py-2 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase`}>Item</th>
+                        <th className={`px-4 py-2 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase`}>Qty</th>
+                        <th className={`px-4 py-2 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase`}>Unit Price</th>
+                        <th className={`px-4 py-2 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase`}>Total</th>
                       </tr>
                     </thead>
-                    <tbody className="divide-y divide-gray-200">
+                    <tbody className={`divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-200'}`}>
                       {selectedReceipt.items.map((item, index) => (
                         <tr key={index}>
                           <td className="px-4 py-3">
                             <div className="flex items-center">
-                              <Package className="h-4 w-4 mr-2 text-gray-400" />
-                              <span className="text-sm text-gray-900">{item.name}</span>
+                              <Package className={`h-4 w-4 mr-2 ${isDark ? 'text-gray-400' : 'text-gray-400'}`} />
+                              <span className={`text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{item.name}</span>
                             </div>
                           </td>
-                          <td className="px-4 py-3 text-sm text-gray-900">{item.quantity}</td>
-                          <td className="px-4 py-3 text-sm text-gray-900">{item.unitPrice}</td>
-                          <td className="px-4 py-3 text-sm font-semibold text-gray-900">{item.total}</td>
+                          <td className={`px-4 py-3 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{item.quantity}</td>
+                          <td className={`px-4 py-3 text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{item.unitPrice}</td>
+                          <td className={`px-4 py-3 text-sm font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>{item.total}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -429,9 +447,9 @@ const ReceiptsPage: React.FC<ReceiptsPageProps> = ({ onLogout, onPageChange }) =
               </div>
 
               {/* Total Amount */}
-              <div className="border-t border-gray-200 pt-4">
+              <div className={`border-t ${isDark ? 'border-gray-700' : 'border-gray-200'} pt-4`}>
                 <div className="flex justify-between items-center">
-                  <span className="text-lg font-semibold text-gray-900">Total Amount:</span>
+                  <span className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Total Amount:</span>
                   <span className="text-lg font-bold text-blue-600">{selectedReceipt.totalAmount}</span>
                 </div>
               </div>
@@ -439,12 +457,69 @@ const ReceiptsPage: React.FC<ReceiptsPageProps> = ({ onLogout, onPageChange }) =
               {/* Notes */}
               {selectedReceipt.notes && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Notes</label>
-                  <div className="bg-gray-50 rounded-lg p-3">
-                    <p className="text-sm text-gray-700">{selectedReceipt.notes}</p>
+                  <label className={`block text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'} mb-2`}>Notes</label>
+                  <div className={`${isDark ? 'bg-gray-700' : 'bg-gray-50'} rounded-lg p-3`}>
+                    <p className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>{selectedReceipt.notes}</p>
                   </div>
                 </div>
               )}
+
+              {/* Linked Movements */}
+              <div>
+                <h4 className={`text-md font-semibold ${isDark ? 'text-white' : 'text-gray-900'} mb-3 flex items-center`}>
+                  <Truck className="h-5 w-5 mr-2" />
+                  Linked Movements
+                </h4>
+                <div className={`border ${isDark ? 'border-gray-700' : 'border-gray-200'} rounded-lg overflow-hidden`}>
+                  <div className={`${isDark ? 'bg-gray-700' : 'bg-gray-50'} px-4 py-2`}>
+                    <p className={`text-xs ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                      Movements associated with this receipt
+                    </p>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    {/* Sample linked movements for demo */}
+                    <div className={`flex items-center justify-between p-3 ${isDark ? 'bg-gray-800' : 'bg-gray-50'} rounded-lg`}>
+                      <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-2">
+                          <Truck className="h-4 w-4 text-green-600" />
+                          <span className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>MOV-2025-001</span>
+                        </div>
+                        <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>•</span>
+                        <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Inbound</span>
+                      </div>
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-green-100 text-green-800">
+                        Arrived
+                      </span>
+                    </div>
+                    <div className={`flex items-center justify-between p-3 ${isDark ? 'bg-gray-800' : 'bg-gray-50'} rounded-lg`}>
+                      <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-2">
+                          <Container className="h-4 w-4 text-purple-600" />
+                          <span className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>MOV-2025-007</span>
+                        </div>
+                        <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>•</span>
+                        <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Transfer</span>
+                      </div>
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+                        Departed
+                      </span>
+                    </div>
+                    <div className={`flex items-center justify-between p-3 ${isDark ? 'bg-gray-800' : 'bg-gray-50'} rounded-lg`}>
+                      <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-2">
+                          <Truck className="h-4 w-4 text-blue-600" />
+                          <span className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>MOV-2025-012</span>
+                        </div>
+                        <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>•</span>
+                        <span className={`text-sm ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Outbound</span>
+                      </div>
+                      <span className="inline-flex px-2 py-1 text-xs font-semibold rounded-full bg-gray-100 text-gray-800">
+                        Pending
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
 
               {/* Actions */}
               <div className="flex gap-3 pt-4">
@@ -454,7 +529,7 @@ const ReceiptsPage: React.FC<ReceiptsPageProps> = ({ onLogout, onPageChange }) =
                 </button>
                 <button
                   onClick={() => setShowDetailsModal(false)}
-                  className="px-6 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className={`px-6 py-2 border ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-lg transition-colors`}
                 >
                   Close
                 </button>

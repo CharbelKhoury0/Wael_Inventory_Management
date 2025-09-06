@@ -1,7 +1,9 @@
 import React from 'react';
 import { Package, Truck, Container, TrendingUp, AlertCircle, CheckCircle } from 'lucide-react';
+import { useTheme } from '../App';
 
 const DashboardCards: React.FC = () => {
+  const { isDark } = useTheme();
   const cards = [
     {
       title: 'Total Items',
@@ -57,13 +59,24 @@ const DashboardCards: React.FC = () => {
   };
 
   const getChangeClasses = (type: string) => {
-    switch (type) {
-      case 'positive':
-        return 'text-green-600 bg-green-50';
-      case 'negative':
-        return 'text-red-600 bg-red-50';
-      default:
-        return 'text-gray-600 bg-gray-50';
+    if (isDark) {
+      switch (type) {
+        case 'positive':
+          return 'text-green-400 bg-green-900/30';
+        case 'negative':
+          return 'text-red-400 bg-red-900/30';
+        default:
+          return 'text-gray-400 bg-gray-800/30';
+      }
+    } else {
+      switch (type) {
+        case 'positive':
+          return 'text-green-600 bg-green-50';
+        case 'negative':
+          return 'text-red-600 bg-red-50';
+        default:
+          return 'text-gray-600 bg-gray-50';
+      }
     }
   };
 
@@ -76,7 +89,7 @@ const DashboardCards: React.FC = () => {
         const cardBg = colorClasses[2];
         
         return (
-          <div key={index} className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 hover:shadow-md transition-shadow duration-200">
+          <div key={index} className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl shadow-sm border p-6 hover:shadow-md transition-shadow duration-200`}>
             <div className="flex items-center justify-between mb-4">
               <div className={`p-3 rounded-lg ${iconBg}`}>
                 <card.icon className="h-6 w-6 text-white" />
@@ -87,9 +100,9 @@ const DashboardCards: React.FC = () => {
             </div>
             
             <div className="space-y-1">
-              <h3 className="text-2xl font-bold text-gray-900">{card.value}</h3>
-              <p className="text-sm font-medium text-gray-600">{card.title}</p>
-              <p className="text-xs text-gray-500">{card.description}</p>
+              <h3 className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{card.value}</h3>
+              <p className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-600'}`}>{card.title}</p>
+              <p className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{card.description}</p>
             </div>
           </div>
         );

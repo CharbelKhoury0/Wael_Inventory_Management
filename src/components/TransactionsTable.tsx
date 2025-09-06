@@ -1,7 +1,9 @@
 import React from 'react';
+import { useTheme } from '../App';
 import { ChevronDown, Filter, Download, Eye } from 'lucide-react';
 
 const TransactionsTable: React.FC = () => {
+  const { isDark } = useTheme();
   const transactions = [
     {
       id: 'TXN-2025-001',
@@ -89,15 +91,15 @@ const TransactionsTable: React.FC = () => {
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-      <div className="px-6 py-4 border-b border-gray-200">
+    <div className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl shadow-sm border`}>
+      <div className={`px-6 py-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h2 className="text-lg font-semibold text-gray-900">Recent Transactions</h2>
-            <p className="text-sm text-gray-500">Latest inventory movements and activities</p>
+            <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Recent Transactions</h2>
+            <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Latest inventory movements and activities</p>
           </div>
           <div className="flex items-center space-x-3">
-            <button className="flex items-center px-3 py-2 text-sm border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+            <button className={`flex items-center px-3 py-2 text-sm border ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'} rounded-md transition-colors`}>
               <Filter className="h-4 w-4 mr-2" />
               Filter
               <ChevronDown className="h-4 w-4 ml-1" />
@@ -112,53 +114,53 @@ const TransactionsTable: React.FC = () => {
 
       <div className="overflow-x-auto">
         <table className="w-full">
-          <thead className="bg-gray-50">
+          <thead className={`${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
             <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
                 Transaction
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
                 Item Details
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
                 Quantity
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
                 Date & Time
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
                 Status
               </th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              <th className={`px-6 py-3 text-left text-xs font-medium ${isDark ? 'text-gray-300' : 'text-gray-500'} uppercase tracking-wider`}>
                 Actions
               </th>
             </tr>
           </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
+          <tbody className={`${isDark ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'} divide-y`}>
             {transactions.map((transaction, index) => (
-              <tr key={index} className="hover:bg-gray-50 transition-colors">
+              <tr key={index} className={`${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'} transition-colors`}>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">{transaction.id}</div>
-                    <div className="text-sm text-gray-500">{transaction.reference}</div>
-                  </div>
-                </td>
-                <td className="px-6 py-4">
-                  <div>
-                    <div className="text-sm font-medium text-gray-900">{transaction.item}</div>
-                    <div className="text-sm text-gray-500">{transaction.supplier}</div>
-                  </div>
-                </td>
+                    <div>
+                      <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.id}</div>
+                      <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{transaction.reference}</div>
+                    </div>
+                  </td>
+                  <td className="px-6 py-4">
+                    <div>
+                      <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.item}</div>
+                      <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{transaction.supplier}</div>
+                    </div>
+                  </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className={`text-sm font-semibold ${getQuantityColor(transaction.quantity)}`}>
-                    {transaction.quantity}
-                  </div>
-                  <div className="text-sm text-gray-500">{transaction.type}</div>
-                </td>
-                <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{transaction.date}</div>
-                  <div className="text-sm text-gray-500">{transaction.time}</div>
-                </td>
+                    <div className={`text-sm font-semibold ${getQuantityColor(transaction.quantity)}`}>
+                      {transaction.quantity}
+                    </div>
+                    <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{transaction.type}</div>
+                  </td>
+                  <td className="px-6 py-4 whitespace-nowrap">
+                    <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.date}</div>
+                    <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{transaction.time}</div>
+                  </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(transaction.status)}`}>
                     {transaction.status}
