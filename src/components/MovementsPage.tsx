@@ -1,8 +1,32 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useTheme, useWarehouse } from '../App';
 import Sidebar from './Sidebar';
 import TopNav from './TopNav';
-import { Search, Plus, Truck, Container, Filter, Eye, Calendar, User, FileText, Building } from 'lucide-react';
+import { 
+  Search, 
+  Plus, 
+  Truck, 
+  Container, 
+  Filter, 
+  Eye, 
+  Calendar, 
+  User, 
+  FileText, 
+  Building,
+  Lock,
+  Unlock,
+  Edit,
+  Trash2,
+  Download,
+  AlertCircle,
+  CheckCircle,
+  Phone,
+  Mail,
+  Clock,
+  ArrowUpCircle,
+  ArrowDownCircle,
+  Package
+} from 'lucide-react';
 
 interface MovementsPageProps {
   onLogout: () => void;
@@ -11,14 +35,54 @@ interface MovementsPageProps {
 
 interface Movement {
   id: string;
-  type: 'Inbound' | 'Outbound' | 'Transfer';
+  type: 'Arrival' | 'Departure';
+  transportType: 'Container' | 'Truck';
   truckPlate: string;
-  containerId: string;
+  containerId?: string;
+  truckInfo?: {
+    plateNumber: string;
+    trailerInfo?: string;
+    capacity?: string;
+  };
+  containerInfo?: {
+    containerId: string;
+    sealNumber?: string;
+    size?: string;
+    type?: string;
+  };
   driverName: string;
-  date: string;
-  status: 'Arrived' | 'Departed' | 'Pending';
-  notes?: string;
+  driverPhone?: string;
+  driverEmail?: string;
   timestamp: string;
+  status: 'Completed' | 'In Progress' | 'Pending';
+  notes?: string;
+  products?: Product[];
+  isLocked?: boolean;
+  arrivalTime?: string;
+  departureTime?: string;
+  origin?: string;
+  destination?: string;
+}
+
+interface Product {
+  id: string;
+  name: string;
+  type: string;
+  quantity: number;
+  unit: string;
+  condition: 'Good' | 'Damaged' | 'Excellent';
+  value?: number;
+  description?: string;
+  barcode?: string;
+}
+
+interface ContainerContents {
+  containerId: string;
+  products: Product[];
+  isLocked: boolean;
+  lastUpdated: string;
+  totalValue: number;
+  totalItems: number;
 }
 
 const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange }) => {
@@ -29,137 +93,171 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
   const [filterType, setFilterType] = useState<string>('all');
   const [showLogModal, setShowLogModal] = useState(false);
   const [showDetailModal, setShowDetailModal] = useState(false);
+  const [showProductModal, setShowProductModal] = useState(false);
+  const [showContainerModal, setShowContainerModal] = useState(false);
   const [selectedMovement, setSelectedMovement] = useState<Movement | null>(null);
+  const [selectedContainer, setSelectedContainer] = useState<string>('');
+  const [movements, setMovements] = useState<Movement[]>([]);
+  const [containerContents, setContainerContents] = useState<ContainerContents[]>([]);
   const [newMovement, setNewMovement] = useState({
-    type: 'Inbound' as 'Inbound' | 'Outbound' | 'Transfer',
+    type: 'Arrival' as 'Arrival' | 'Departure',
+    transportType: 'Container' as 'Container' | 'Truck',
     truckPlate: '',
     containerId: '',
+    truckInfo: {
+      plateNumber: '',
+      trailerInfo: '',
+      capacity: ''
+    },
+    containerInfo: {
+      containerId: '',
+      sealNumber: '',
+      size: '',
+      type: ''
+    },
     driverName: '',
+    driverPhone: '',
+    driverEmail: '',
+    origin: '',
+    destination: '',
     notes: ''
   });
+  const [newProduct, setNewProduct] = useState<Partial<Product>>({
+    name: '',
+    type: '',
+    quantity: 0,
+    unit: '',
+    condition: 'Good',
+    value: 0,
+    description: '',
+    barcode: ''
+  });
 
-  // Sample movements data
-  const movements: Movement[] = [
-    {
-      id: 'MOV-2025-001',
-      type: 'Inbound',
-      truckPlate: 'ABC-1234',
-      containerId: 'CONT-001',
-      driverName: 'John Smith',
-      date: '2025-01-15',
-      status: 'Arrived',
-      notes: 'Delivery from Port A',
-      timestamp: '2025-01-15 09:30:00'
-    },
-    {
-      id: 'MOV-2025-002',
-      type: 'Outbound',
-      truckPlate: 'XYZ-5678',
-      containerId: 'CONT-002',
-      driverName: 'Mike Johnson',
-      date: '2025-01-15',
-      status: 'Departed',
-      notes: 'Shipment to Client B',
-      timestamp: '2025-01-15 14:45:00'
-    },
-    {
-      id: 'MOV-2025-003',
-      type: 'Transfer',
-      truckPlate: 'DEF-9012',
-      containerId: 'CONT-003',
-      driverName: 'Sarah Wilson',
-      date: '2025-01-15',
-      status: 'Pending',
-      notes: 'Internal transfer to Warehouse B',
-      timestamp: '2025-01-15 16:00:00'
-    },
-    {
-      id: 'MOV-2025-004',
-      type: 'Inbound',
-      truckPlate: 'GHI-3456',
-      containerId: 'CONT-004',
-      driverName: 'David Brown',
-      date: '2025-01-14',
-      status: 'Arrived',
-      notes: 'Emergency delivery',
-      timestamp: '2025-01-14 11:15:00'
-    },
-    {
-      id: 'MOV-2025-005',
-      type: 'Outbound',
-      truckPlate: 'JKL-7890',
-      containerId: 'CONT-005',
-      driverName: 'Lisa Davis',
-      date: '2025-01-14',
-      status: 'Departed',
-      notes: 'Regular shipment',
-      timestamp: '2025-01-14 13:20:00'
-    },
-    {
-      id: 'MOV-2025-006',
-      type: 'Inbound',
-      truckPlate: 'MNO-2468',
-      containerId: 'CONT-006',
-      driverName: 'Robert Taylor',
-      date: '2025-01-14',
-      status: 'Pending',
-      notes: 'Awaiting inspection',
-      timestamp: '2025-01-14 15:30:00'
-    },
-    {
-      id: 'MOV-2025-007',
-      type: 'Transfer',
-      truckPlate: 'PQR-1357',
-      containerId: 'CONT-007',
-      driverName: 'Emily Anderson',
-      date: '2025-01-13',
-      status: 'Arrived',
-      notes: 'Cross-dock operation',
-      timestamp: '2025-01-13 10:45:00'
-    },
-    {
-      id: 'MOV-2025-008',
-      type: 'Outbound',
-      truckPlate: 'STU-9753',
-      containerId: 'CONT-008',
-      driverName: 'James Wilson',
-      date: '2025-01-13',
-      status: 'Departed',
-      notes: 'Express delivery',
-      timestamp: '2025-01-13 16:10:00'
-    },
-    {
-      id: 'MOV-2025-009',
-      type: 'Inbound',
-      truckPlate: 'VWX-4680',
-      containerId: 'CONT-009',
-      driverName: 'Maria Garcia',
-      date: '2025-01-13',
-      status: 'Arrived',
-      notes: 'Scheduled delivery',
-      timestamp: '2025-01-13 08:00:00'
-    },
-    {
-      id: 'MOV-2025-010',
-      type: 'Transfer',
-      truckPlate: 'YZA-1234',
-      containerId: 'CONT-010',
-      driverName: 'Kevin Lee',
-      date: '2025-01-12',
-      status: 'Pending',
-      notes: 'Waiting for clearance',
-      timestamp: '2025-01-12 14:30:00'
+  // Load data from localStorage on component mount
+  useEffect(() => {
+    const savedMovements = localStorage.getItem('movements');
+    const savedContainerContents = localStorage.getItem('containerContents');
+    
+    if (savedMovements) {
+      setMovements(JSON.parse(savedMovements));
+    } else {
+      // Initialize with sample data
+      const sampleMovements: Movement[] = [
+        {
+          id: 'MOV-001',
+          type: 'Arrival',
+          transportType: 'Container',
+          truckPlate: 'LB-123-456',
+          containerId: 'CONT-001',
+          containerInfo: {
+            containerId: 'CONT-001',
+            sealNumber: 'SEAL-12345',
+            size: '40ft',
+            type: 'Standard'
+          },
+          driverName: 'Ahmad Khalil',
+          driverPhone: '+961-70-123456',
+          driverEmail: 'ahmad.khalil@transport.lb',
+          timestamp: '2024-01-15 10:30 AM',
+          status: 'Completed',
+          origin: 'Beirut Port',
+          destination: 'Warehouse A',
+          notes: 'Cargo inspection completed',
+          isLocked: true,
+          arrivalTime: '2024-01-15 10:30 AM'
+        },
+        {
+          id: 'MOV-002',
+          type: 'Departure',
+          transportType: 'Truck',
+          truckPlate: 'LB-789-012',
+          truckInfo: {
+            plateNumber: 'LB-789-012',
+            trailerInfo: 'Semi-trailer',
+            capacity: '25 tons'
+          },
+          driverName: 'Fatima Mansour',
+          driverPhone: '+961-71-789012',
+          timestamp: '2024-01-15 2:15 PM',
+          status: 'Completed',
+          origin: 'Warehouse B',
+          destination: 'Tripoli Port',
+          isLocked: false,
+          departureTime: '2024-01-15 2:15 PM'
+        },
+        {
+          id: 'MOV-003',
+          type: 'Arrival',
+          transportType: 'Container',
+          truckPlate: 'LB-345-678',
+          containerId: 'CONT-003',
+          containerInfo: {
+            containerId: 'CONT-003',
+            sealNumber: 'SEAL-67890',
+            size: '20ft',
+            type: 'Refrigerated'
+          },
+          driverName: 'Omar Saad',
+          driverPhone: '+961-76-345678',
+          timestamp: '2024-01-14 4:45 PM',
+          status: 'Pending',
+          origin: 'Sidon Port',
+          destination: 'Warehouse C',
+          notes: 'Awaiting customs clearance',
+          isLocked: false
+        }
+      ];
+      setMovements(sampleMovements);
+      localStorage.setItem('movements', JSON.stringify(sampleMovements));
     }
-  ];
+    
+    if (savedContainerContents) {
+      setContainerContents(JSON.parse(savedContainerContents));
+    } else {
+      // Initialize with sample container contents
+      const sampleContents: ContainerContents[] = [
+        {
+          containerId: 'CONT-001',
+          products: [
+            {
+              id: 'PROD-001',
+              name: 'Electronics Components',
+              type: 'Electronics',
+              quantity: 50,
+              unit: 'boxes',
+              condition: 'Good',
+              value: 25000,
+              description: 'Various electronic components for manufacturing'
+            }
+          ],
+          isLocked: true,
+          lastUpdated: '2024-01-15 10:30 AM',
+          totalValue: 25000,
+          totalItems: 50
+        }
+      ];
+      setContainerContents(sampleContents);
+      localStorage.setItem('containerContents', JSON.stringify(sampleContents));
+    }
+  }, []);
+  
+  // Save to localStorage whenever data changes
+  useEffect(() => {
+    localStorage.setItem('movements', JSON.stringify(movements));
+  }, [movements]);
+  
+  useEffect(() => {
+    localStorage.setItem('containerContents', JSON.stringify(containerContents));
+  }, [containerContents]);
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'Arrived':
+      case 'Completed':
         return 'bg-green-100 text-green-800';
-      case 'Departed':
+      case 'In Progress':
         return 'bg-blue-100 text-blue-800';
       case 'Pending':
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-yellow-100 text-yellow-800';
       default:
         return 'bg-gray-100 text-gray-800';
     }
@@ -167,36 +265,281 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
 
   const getTypeIcon = (type: string) => {
     switch (type) {
-      case 'Inbound':
-        return <Truck className="h-4 w-4 text-green-600" />;
-      case 'Outbound':
-        return <Truck className="h-4 w-4 text-blue-600" />;
-      case 'Transfer':
-        return <Container className="h-4 w-4 text-purple-600" />;
+      case 'Arrival':
+        return <ArrowDownCircle className="h-4 w-4 text-green-600" />;
+      case 'Departure':
+        return <ArrowUpCircle className="h-4 w-4 text-blue-600" />;
       default:
-        return <Truck className="h-4 w-4" />;
+        return <Package className="h-4 w-4 text-gray-600" />;
     }
   };
 
+  const getTransportTypeIcon = (transportType: string) => {
+    switch (transportType) {
+      case 'Container':
+        return <Container className="h-5 w-5 text-blue-600" />;
+      case 'Truck':
+        return <Truck className="h-5 w-5 text-orange-600" />;
+      default:
+        return <Package className="h-5 w-5 text-gray-600" />;
+    }
+  };
+
+  const getTransportTypeColor = (transportType: string) => {
+    switch (transportType) {
+      case 'Container':
+        return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'Truck':
+        return 'bg-orange-100 text-orange-800 border-orange-200';
+      default:
+        return 'bg-gray-100 text-gray-800 border-gray-200';
+    }
+  };
+
+  const generateMovementId = () => {
+    const timestamp = Date.now();
+    return `MOV-${timestamp.toString().slice(-6)}`;
+  };
+
+  const generateProductId = () => {
+    const timestamp = Date.now();
+    return `PROD-${timestamp.toString().slice(-6)}`;
+  };
+
+  const validateMovement = (movement: any) => {
+    const errors: string[] = [];
+    
+    if (!movement.driverName?.trim()) errors.push('Driver name is required');
+    
+    if (movement.transportType === 'Container') {
+      if (!movement.containerInfo?.containerId?.trim()) {
+        errors.push('Container ID is required for container transport');
+      }
+    } else if (movement.transportType === 'Truck') {
+      if (!movement.truckInfo?.plateNumber?.trim()) {
+        errors.push('Truck plate is required for truck transport');
+      }
+    }
+    
+    if (movement.driverPhone && !/^\+961-\d{2}-\d{6}$/.test(movement.driverPhone)) {
+      errors.push('Phone number must be in format +961-XX-XXXXXX');
+    }
+    if (movement.driverEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(movement.driverEmail)) {
+      errors.push('Invalid email format');
+    }
+    return errors;
+  };
+
+  const checkDuplicateContainer = (containerId: string, excludeId?: string) => {
+    return movements.some(m => m.containerId === containerId && m.id !== excludeId && m.status !== 'Completed');
+  };
+
+  const getContainerContents = (containerId: string) => {
+    return containerContents.find(cc => cc.containerId === containerId);
+  };
+
+  const toggleContainerLock = (containerId: string) => {
+    setContainerContents(prev => 
+      prev.map(cc => 
+        cc.containerId === containerId 
+          ? { ...cc, isLocked: !cc.isLocked, lastUpdated: new Date().toLocaleString() }
+          : cc
+      )
+    );
+    setMovements(prev => 
+      prev.map(m => 
+        m.containerId === containerId 
+          ? { ...m, isLocked: !m.isLocked }
+          : m
+      )
+    );
+  };
+
   const filteredMovements = movements.filter(movement => {
-    const matchesSearch = movement.id.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         movement.truckPlate.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         movement.containerId.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                         movement.driverName.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesFilter = filterType === 'all' || movement.type === filterType;
+    const searchLower = searchTerm.toLowerCase();
+    const matchesSearch = movement.id.toLowerCase().includes(searchLower) ||
+                         movement.driverName.toLowerCase().includes(searchLower) ||
+                         (movement.truckPlate && movement.truckPlate.toLowerCase().includes(searchLower)) ||
+                         (movement.containerId && movement.containerId.toLowerCase().includes(searchLower)) ||
+                         (movement.truckInfo?.plateNumber && movement.truckInfo.plateNumber.toLowerCase().includes(searchLower)) ||
+                         (movement.containerInfo?.containerId && movement.containerInfo.containerId.toLowerCase().includes(searchLower)) ||
+                         movement.transportType.toLowerCase().includes(searchLower);
+    
+    const matchesFilter = filterType === 'all' || 
+                         movement.type === filterType || 
+                         movement.transportType === filterType;
+    
     return matchesSearch && matchesFilter;
   });
 
   const handleLogMovement = () => {
-    // Just close modal for demo
-    setShowLogModal(false);
+    const errors = validateMovement(newMovement);
+    if (errors.length > 0) {
+      alert('Please fix the following errors:\n' + errors.join('\n'));
+      return;
+    }
+
+    // Check for duplicate container/truck based on transport type
+    if (newMovement.transportType === 'Container' && newMovement.containerInfo?.containerId) {
+      if (checkDuplicateContainer(newMovement.containerInfo.containerId)) {
+        alert('A container with this ID is already active. Please use a different container ID.');
+        return;
+      }
+    }
+
+    const movement: Movement = {
+      id: generateMovementId(),
+      type: newMovement.type as 'Arrival' | 'Departure',
+      transportType: newMovement.transportType,
+      truckPlate: newMovement.transportType === 'Truck' ? newMovement.truckInfo?.plateNumber || '' : '',
+      containerId: newMovement.transportType === 'Container' ? newMovement.containerInfo?.containerId : undefined,
+      truckInfo: newMovement.transportType === 'Truck' ? newMovement.truckInfo : undefined,
+      containerInfo: newMovement.transportType === 'Container' ? newMovement.containerInfo : undefined,
+      driverName: newMovement.driverName!,
+      driverPhone: newMovement.driverPhone,
+      driverEmail: newMovement.driverEmail,
+      timestamp: new Date().toLocaleString(),
+      status: 'In Progress',
+      origin: newMovement.origin,
+      destination: newMovement.destination,
+      notes: newMovement.notes,
+      isLocked: false,
+      arrivalTime: newMovement.type === 'Arrival' ? new Date().toLocaleString() : undefined,
+      departureTime: newMovement.type === 'Departure' ? new Date().toLocaleString() : undefined
+    };
+
+    setMovements(prev => [movement, ...prev]);
+    
+    // Initialize container contents if it's a container arrival
+    if (movement.type === 'Arrival' && movement.transportType === 'Container' && movement.containerId) {
+      const existingContainer = getContainerContents(movement.containerId);
+      if (!existingContainer) {
+        const newContainer: ContainerContents = {
+          containerId: movement.containerId,
+          products: [],
+          isLocked: false,
+          lastUpdated: new Date().toLocaleString(),
+          totalValue: 0,
+          totalItems: 0
+        };
+        setContainerContents(prev => [...prev, newContainer]);
+      }
+    }
+
+    // Reset form
     setNewMovement({
-      type: 'Inbound',
+      type: 'Arrival',
+      transportType: 'Container',
       truckPlate: '',
       containerId: '',
+      truckInfo: {
+        plateNumber: '',
+        trailerInfo: '',
+        capacity: ''
+      },
+      containerInfo: {
+        containerId: '',
+        sealNumber: '',
+        size: '',
+        type: ''
+      },
       driverName: '',
+      driverPhone: '',
+      driverEmail: '',
+      origin: '',
+      destination: '',
       notes: ''
     });
+    
+    setShowLogModal(false);
+    alert('Movement logged successfully!');
+  };
+
+  const handleAddProduct = () => {
+    if (!selectedContainer) {
+      alert('Please select a container first.');
+      return;
+    }
+
+    if (!newProduct.name?.trim() || !newProduct.type?.trim() || !newProduct.quantity || !newProduct.unit?.trim()) {
+      alert('Please fill in all required product fields.');
+      return;
+    }
+
+    const product: Product = {
+      id: generateProductId(),
+      name: newProduct.name!,
+      type: newProduct.type!,
+      quantity: newProduct.quantity!,
+      unit: newProduct.unit!,
+      condition: newProduct.condition as 'Good' | 'Damaged' | 'Excellent',
+      value: newProduct.value || 0,
+      description: newProduct.description,
+      barcode: newProduct.barcode
+    };
+
+    setContainerContents(prev => 
+      prev.map(cc => {
+        if (cc.containerId === selectedContainer) {
+          const updatedProducts = [...cc.products, product];
+          return {
+            ...cc,
+            products: updatedProducts,
+            totalItems: updatedProducts.reduce((sum, p) => sum + p.quantity, 0),
+            totalValue: updatedProducts.reduce((sum, p) => sum + (p.value || 0), 0),
+            lastUpdated: new Date().toLocaleString()
+          };
+        }
+        return cc;
+      })
+    );
+
+    // Reset form
+    setNewProduct({
+      name: '',
+      type: '',
+      quantity: 0,
+      unit: '',
+      condition: 'Good',
+      value: 0,
+      description: '',
+      barcode: ''
+    });
+    
+    setShowProductModal(false);
+    alert('Product added successfully!');
+  };
+
+  const handleDeleteMovement = (movementId: string) => {
+    if (confirm('Are you sure you want to delete this movement?')) {
+      setMovements(prev => prev.filter(m => m.id !== movementId));
+      alert('Movement deleted successfully!');
+    }
+  };
+
+  const exportManifest = (containerId: string) => {
+    const container = getContainerContents(containerId);
+    if (!container) {
+      alert('No container contents found.');
+      return;
+    }
+
+    const manifest = {
+      containerId: container.containerId,
+      exportDate: new Date().toLocaleString(),
+      totalItems: container.totalItems,
+      totalValue: container.totalValue,
+      products: container.products
+    };
+
+    const dataStr = JSON.stringify(manifest, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `manifest-${containerId}-${Date.now()}.json`;
+    link.click();
+    URL.revokeObjectURL(url);
   };
 
   const handleViewDetails = (movement: Movement) => {
@@ -276,21 +619,46 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
                     }`}
                   >
                     <option value="all">All Types</option>
-                    <option value="Inbound">Inbound</option>
-                    <option value="Outbound">Outbound</option>
-                    <option value="Transfer">Transfer</option>
+                    <option value="Arrival">Arrivals</option>
+                    <option value="Departure">Departures</option>
+                    <option value="Container">Container Transport</option>
+                    <option value="Truck">Truck Transport</option>
                   </select>
                 </div>
               </div>
 
               {/* Log Movement Button */}
-              <button
-                onClick={() => setShowLogModal(true)}
-                className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg flex items-center gap-2 transition-colors"
-              >
-                <Plus className="h-4 w-4" />
-                Log Movement
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => setShowProductModal(true)}
+                  className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <Package className="h-4 w-4" />
+                  Add Product
+                </button>
+                <button
+                  onClick={() => {
+                    const containers = movements.filter(m => m.type === 'Arrival').map(m => m.containerId);
+                    if (containers.length > 0) {
+                      setSelectedContainer(containers[0]);
+                      setShowContainerModal(true);
+                    } else {
+                      alert('No containers available. Please log an arrival first.');
+                    }
+                  }}
+                  className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <Eye className="h-4 w-4" />
+                  View Contents
+                </button>
+                <button
+                  onClick={() => setShowLogModal(true)}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                >
+                  <Plus className="h-4 w-4" />
+                  Log Movement
+                </button>
+              </div>
             </div>
           </div>
 
@@ -313,22 +681,32 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
                     <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
                       isDark ? 'text-gray-300' : 'text-gray-500'
                     }`}>
-                      Truck Plate
+                      Transport
                     </th>
                     <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
                       isDark ? 'text-gray-300' : 'text-gray-500'
                     }`}>
-                      Container ID
+                      Vehicle/Container
                     </th>
                     <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
                       isDark ? 'text-gray-300' : 'text-gray-500'
                     }`}>
-                      Date
+                      Driver
+                    </th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
+                      isDark ? 'text-gray-300' : 'text-gray-500'
+                    }`}>
+                      Timestamp
                     </th>
                     <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
                       isDark ? 'text-gray-300' : 'text-gray-500'
                     }`}>
                       Status
+                    </th>
+                    <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
+                      isDark ? 'text-gray-300' : 'text-gray-500'
+                    }`}>
+                      Lock Status
                     </th>
                     <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${
                       isDark ? 'text-gray-300' : 'text-gray-500'
@@ -357,20 +735,44 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
                           </span>
                         </div>
                       </td>
-                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${
-                        isDark ? 'text-gray-300' : 'text-gray-900'
-                      }`}>
-                        {movement.truckPlate}
+                      <td className="px-6 py-4 whitespace-nowrap text-sm">
+                        <div className="flex items-center gap-2">
+                          {getTransportTypeIcon(movement.transportType)}
+                          <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full border ${
+                            getTransportTypeColor(movement.transportType)
+                          }`}>
+                            {movement.transportType}
+                          </span>
+                        </div>
                       </td>
                       <td className={`px-6 py-4 whitespace-nowrap text-sm ${
                         isDark ? 'text-gray-300' : 'text-gray-900'
                       }`}>
-                        {movement.containerId}
+                        {movement.transportType === 'Container' ? (
+                          <div>
+                            <div className="font-medium">{movement.containerId || movement.containerInfo?.containerId}</div>
+                            {movement.containerInfo?.size && (
+                              <div className="text-xs text-gray-500">{movement.containerInfo.size} - {movement.containerInfo.type}</div>
+                            )}
+                          </div>
+                        ) : (
+                          <div>
+                            <div className="font-medium">{movement.truckPlate || movement.truckInfo?.plateNumber}</div>
+                            {movement.truckInfo?.capacity && (
+                              <div className="text-xs text-gray-500">{movement.truckInfo.capacity}</div>
+                            )}
+                          </div>
+                        )}
                       </td>
                       <td className={`px-6 py-4 whitespace-nowrap text-sm ${
                         isDark ? 'text-gray-300' : 'text-gray-900'
                       }`}>
-                        {movement.date}
+                        {movement.driverName}
+                      </td>
+                      <td className={`px-6 py-4 whitespace-nowrap text-sm ${
+                        isDark ? 'text-gray-300' : 'text-gray-900'
+                      }`}>
+                        {movement.timestamp}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
@@ -379,19 +781,73 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
                           {movement.status}
                         </span>
                       </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        {movement.transportType === 'Container' && movement.containerId ? (
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toggleContainerLock(movement.containerId!);
+                            }}
+                            className={`flex items-center gap-1 px-2 py-1 rounded text-xs ${
+                              movement.isLocked
+                                ? 'bg-red-100 text-red-800 hover:bg-red-200'
+                                : 'bg-green-100 text-green-800 hover:bg-green-200'
+                            }`}
+                          >
+                            {movement.isLocked ? <Lock className="h-3 w-3" /> : <Unlock className="h-3 w-3" />}
+                            {movement.isLocked ? 'Locked' : 'Unlocked'}
+                          </button>
+                        ) : (
+                          <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                            N/A
+                          </span>
+                        )}
+                      </td>
                       <td className="px-6 py-4 whitespace-nowrap text-sm">
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleViewDetails(movement);
-                          }}
-                          className={`text-blue-600 hover:text-blue-900 flex items-center gap-1 ${
-                            isDark ? 'text-blue-400 hover:text-blue-300' : ''
-                          }`}
-                        >
-                          <Eye className="h-4 w-4" />
-                          View
-                        </button>
+                        <div className="flex items-center gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleViewDetails(movement);
+                            }}
+                            className={`text-blue-600 hover:text-blue-900 flex items-center gap-1 ${
+                              isDark ? 'text-blue-400 hover:text-blue-300' : ''
+                            }`}
+                          >
+                            <Eye className="h-4 w-4" />
+                            View
+                          </button>
+                          {movement.transportType === 'Container' && movement.containerId ? (
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                exportManifest(movement.containerId!);
+                              }}
+                              className={`text-green-600 hover:text-green-900 flex items-center gap-1 ${
+                                isDark ? 'text-green-400 hover:text-green-300' : ''
+                              }`}
+                            >
+                              <Download className="h-4 w-4" />
+                              Export
+                            </button>
+                          ) : (
+                            <span className={`text-xs ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>
+                              N/A
+                            </span>
+                          )}
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              handleDeleteMovement(movement.id);
+                            }}
+                            className={`text-red-600 hover:text-red-900 flex items-center gap-1 ${
+                              isDark ? 'text-red-400 hover:text-red-300' : ''
+                            }`}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                            Delete
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -408,63 +864,263 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
                   Log New Movement
                 </h3>
                 
-                <div className="space-y-4">
+                {/* Transport Type Selection */}
+                <div className="mb-6">
+                  <label className={`block text-sm font-medium mb-3 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Transport Type *
+                  </label>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setNewMovement({...newMovement, transportType: 'Container'})}
+                      className={`p-4 border-2 rounded-lg transition-all duration-200 flex flex-col items-center gap-2 ${
+                        newMovement.transportType === 'Container'
+                          ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                          : isDark
+                            ? 'border-gray-600 hover:border-gray-500'
+                            : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                    >
+                      <Container className={`h-8 w-8 ${
+                        newMovement.transportType === 'Container' ? 'text-blue-600' : isDark ? 'text-gray-400' : 'text-gray-500'
+                      }`} />
+                      <span className={`font-medium ${
+                        newMovement.transportType === 'Container' ? 'text-blue-700 dark:text-blue-300' : isDark ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
+                        Container
+                      </span>
+                      <span className={`text-xs text-center ${
+                        newMovement.transportType === 'Container' ? 'text-blue-600 dark:text-blue-400' : isDark ? 'text-gray-400' : 'text-gray-500'
+                      }`}>
+                        Shipping containers with seal numbers
+                      </span>
+                    </button>
+                    
+                    <button
+                      type="button"
+                      onClick={() => setNewMovement({...newMovement, transportType: 'Truck'})}
+                      className={`p-4 border-2 rounded-lg transition-all duration-200 flex flex-col items-center gap-2 ${
+                        newMovement.transportType === 'Truck'
+                          ? 'border-orange-500 bg-orange-50 dark:bg-orange-900/20'
+                          : isDark
+                            ? 'border-gray-600 hover:border-gray-500'
+                            : 'border-gray-300 hover:border-gray-400'
+                      }`}
+                    >
+                      <Truck className={`h-8 w-8 ${
+                        newMovement.transportType === 'Truck' ? 'text-orange-600' : isDark ? 'text-gray-400' : 'text-gray-500'
+                      }`} />
+                      <span className={`font-medium ${
+                        newMovement.transportType === 'Truck' ? 'text-orange-700 dark:text-orange-300' : isDark ? 'text-gray-300' : 'text-gray-700'
+                      }`}>
+                        Truck
+                      </span>
+                      <span className={`text-xs text-center ${
+                        newMovement.transportType === 'Truck' ? 'text-orange-600 dark:text-orange-400' : isDark ? 'text-gray-400' : 'text-gray-500'
+                      }`}>
+                        Direct truck transport with trailers
+                      </span>
+                    </button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Movement Type
+                      Movement Type *
                     </label>
                     <select
                       value={newMovement.type}
-                      onChange={(e) => setNewMovement({...newMovement, type: e.target.value as any})}
+                      onChange={(e) => setNewMovement({...newMovement, type: e.target.value as 'Arrival' | 'Departure'})}
                       className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
                         isDark 
                           ? 'bg-gray-700 border-gray-600 text-white' 
                           : 'bg-white border-gray-300 text-gray-900'
                       }`}
                     >
-                      <option value="Inbound">Inbound</option>
-                      <option value="Outbound">Outbound</option>
-                      <option value="Transfer">Transfer</option>
+                      <option value="Arrival">Arrival</option>
+                      <option value="Departure">Departure</option>
                     </select>
                   </div>
 
-                  <div>
-                    <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Truck Plate
-                    </label>
-                    <input
-                      type="text"
-                      value={newMovement.truckPlate}
-                      onChange={(e) => setNewMovement({...newMovement, truckPlate: e.target.value})}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        isDark 
-                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
-                          : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                      }`}
-                      placeholder="e.g., ABC-1234"
-                    />
-                  </div>
+                  {/* Dynamic Transport-Specific Fields */}
+                  {newMovement.transportType === 'Container' ? (
+                    <>
+                      <div>
+                        <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                          Container ID *
+                        </label>
+                        <input
+                          type="text"
+                          value={newMovement.containerInfo?.containerId || ''}
+                          onChange={(e) => setNewMovement({
+                            ...newMovement,
+                            containerInfo: {
+                              ...newMovement.containerInfo,
+                              containerId: e.target.value
+                            }
+                          })}
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            isDark 
+                              ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                              : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                          }`}
+                          placeholder="e.g., CONT-001"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                          Seal Number
+                        </label>
+                        <input
+                          type="text"
+                          value={newMovement.containerInfo?.sealNumber || ''}
+                          onChange={(e) => setNewMovement({
+                            ...newMovement,
+                            containerInfo: {
+                              ...newMovement.containerInfo,
+                              sealNumber: e.target.value
+                            }
+                          })}
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            isDark 
+                              ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                              : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                          }`}
+                          placeholder="e.g., SEAL-12345"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                          Container Size
+                        </label>
+                        <select
+                          value={newMovement.containerInfo?.size || ''}
+                          onChange={(e) => setNewMovement({
+                            ...newMovement,
+                            containerInfo: {
+                              ...newMovement.containerInfo,
+                              size: e.target.value
+                            }
+                          })}
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            isDark 
+                              ? 'bg-gray-700 border-gray-600 text-white' 
+                              : 'bg-white border-gray-300 text-gray-900'
+                          }`}
+                        >
+                          <option value="">Select size...</option>
+                          <option value="20ft">20ft</option>
+                          <option value="40ft">40ft</option>
+                          <option value="45ft">45ft</option>
+                        </select>
+                      </div>
+                      
+                      <div>
+                        <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                          Container Type
+                        </label>
+                        <select
+                          value={newMovement.containerInfo?.type || ''}
+                          onChange={(e) => setNewMovement({
+                            ...newMovement,
+                            containerInfo: {
+                              ...newMovement.containerInfo,
+                              type: e.target.value
+                            }
+                          })}
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            isDark 
+                              ? 'bg-gray-700 border-gray-600 text-white' 
+                              : 'bg-white border-gray-300 text-gray-900'
+                          }`}
+                        >
+                          <option value="">Select type...</option>
+                          <option value="Standard">Standard</option>
+                          <option value="Refrigerated">Refrigerated</option>
+                          <option value="Open Top">Open Top</option>
+                          <option value="Flat Rack">Flat Rack</option>
+                        </select>
+                      </div>
+                    </>
+                  ) : (
+                    <>
+                      <div>
+                        <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                          Truck Plate *
+                        </label>
+                        <input
+                          type="text"
+                          value={newMovement.truckInfo?.plateNumber || ''}
+                          onChange={(e) => setNewMovement({
+                            ...newMovement,
+                            truckInfo: {
+                              ...newMovement.truckInfo,
+                              plateNumber: e.target.value
+                            }
+                          })}
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            isDark 
+                              ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                              : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                          }`}
+                          placeholder="e.g., LB-123-456"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                          Trailer Information
+                        </label>
+                        <input
+                          type="text"
+                          value={newMovement.truckInfo?.trailerInfo || ''}
+                          onChange={(e) => setNewMovement({
+                            ...newMovement,
+                            truckInfo: {
+                              ...newMovement.truckInfo,
+                              trailerInfo: e.target.value
+                            }
+                          })}
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            isDark 
+                              ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                              : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                          }`}
+                          placeholder="e.g., Semi-trailer, Flatbed"
+                        />
+                      </div>
+                      
+                      <div>
+                        <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                          Capacity
+                        </label>
+                        <input
+                          type="text"
+                          value={newMovement.truckInfo?.capacity || ''}
+                          onChange={(e) => setNewMovement({
+                            ...newMovement,
+                            truckInfo: {
+                              ...newMovement.truckInfo,
+                              capacity: e.target.value
+                            }
+                          })}
+                          className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                            isDark 
+                              ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                              : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                          }`}
+                          placeholder="e.g., 25 tons, 40 cubic meters"
+                        />
+                      </div>
+                    </>
+                  )}
 
                   <div>
                     <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Container ID
-                    </label>
-                    <input
-                      type="text"
-                      value={newMovement.containerId}
-                      onChange={(e) => setNewMovement({...newMovement, containerId: e.target.value})}
-                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
-                        isDark 
-                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
-                          : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
-                      }`}
-                      placeholder="e.g., CONT-001"
-                    />
-                  </div>
-
-                  <div>
-                    <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
-                      Driver Name
+                      Driver Name *
                     </label>
                     <input
                       type="text"
@@ -481,6 +1137,74 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
 
                   <div>
                     <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Driver Phone
+                    </label>
+                    <input
+                      type="tel"
+                      value={newMovement.driverPhone}
+                      onChange={(e) => setNewMovement({...newMovement, driverPhone: e.target.value})}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        isDark 
+                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                          : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                      }`}
+                      placeholder="+961-XX-XXXXXX"
+                    />
+                  </div>
+
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Driver Email
+                    </label>
+                    <input
+                      type="email"
+                      value={newMovement.driverEmail}
+                      onChange={(e) => setNewMovement({...newMovement, driverEmail: e.target.value})}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        isDark 
+                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                          : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                      }`}
+                      placeholder="driver@example.com"
+                    />
+                  </div>
+
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Origin
+                    </label>
+                    <input
+                      type="text"
+                      value={newMovement.origin}
+                      onChange={(e) => setNewMovement({...newMovement, origin: e.target.value})}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        isDark 
+                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                          : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                      }`}
+                      placeholder="e.g., Beirut Port"
+                    />
+                  </div>
+
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Destination
+                    </label>
+                    <input
+                      type="text"
+                      value={newMovement.destination}
+                      onChange={(e) => setNewMovement({...newMovement, destination: e.target.value})}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        isDark 
+                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                          : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                      }`}
+                      placeholder="e.g., Warehouse A"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
                       Notes
                     </label>
                     <textarea
@@ -495,6 +1219,19 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
                       placeholder="Additional notes..."
                     />
                   </div>
+                </div>
+
+                <div className="mt-4 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
+                  <div className="flex items-center gap-2 text-blue-700 dark:text-blue-300">
+                    <AlertCircle className="h-4 w-4" />
+                    <span className="text-sm font-medium">Validation Info</span>
+                  </div>
+                  <ul className="mt-2 text-xs text-blue-600 dark:text-blue-400 space-y-1">
+                    <li>• Fields marked with * are required</li>
+                    <li>• Phone format: +961-XX-XXXXXX</li>
+                    <li>• Container IDs must be unique for active movements</li>
+                    <li>• Timestamp will be automatically recorded</li>
+                  </ul>
                 </div>
 
                 <div className="flex gap-3 mt-6">
@@ -513,6 +1250,353 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
                     className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
                   >
                     Save Movement
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Product Assignment Modal */}
+          {showProductModal && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto`}>
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    Add Product to Container
+                  </h3>
+                  <button
+                    onClick={() => setShowProductModal(false)}
+                    className={`text-gray-400 hover:text-gray-600 ${isDark ? 'hover:text-gray-300' : ''}`}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                <div className="mb-4">
+                  <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                    Select Container *
+                  </label>
+                  <select
+                    value={selectedContainer}
+                    onChange={(e) => setSelectedContainer(e.target.value)}
+                    className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                      isDark 
+                        ? 'bg-gray-700 border-gray-600 text-white' 
+                        : 'bg-white border-gray-300 text-gray-900'
+                    }`}
+                  >
+                    <option value="">Select a container...</option>
+                    {movements.filter(m => m.type === 'Arrival' && m.status !== 'Completed').map(movement => (
+                      <option key={movement.containerId} value={movement.containerId}>
+                        {movement.containerId} - {movement.truckPlate}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Product Name *
+                    </label>
+                    <input
+                      type="text"
+                      value={newProduct.name}
+                      onChange={(e) => setNewProduct({...newProduct, name: e.target.value})}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        isDark 
+                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                          : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                      }`}
+                      placeholder="Product name"
+                    />
+                  </div>
+
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Product Type *
+                    </label>
+                    <input
+                      type="text"
+                      value={newProduct.type}
+                      onChange={(e) => setNewProduct({...newProduct, type: e.target.value})}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        isDark 
+                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                          : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                      }`}
+                      placeholder="e.g., Electronics, Food, Textiles"
+                    />
+                  </div>
+
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Quantity *
+                    </label>
+                    <input
+                      type="number"
+                      value={newProduct.quantity}
+                      onChange={(e) => setNewProduct({...newProduct, quantity: parseInt(e.target.value) || 0})}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        isDark 
+                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                          : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                      }`}
+                      placeholder="0"
+                      min="1"
+                    />
+                  </div>
+
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Unit *
+                    </label>
+                    <input
+                      type="text"
+                      value={newProduct.unit}
+                      onChange={(e) => setNewProduct({...newProduct, unit: e.target.value})}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        isDark 
+                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                          : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                      }`}
+                      placeholder="e.g., boxes, kg, pieces"
+                    />
+                  </div>
+
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Condition
+                    </label>
+                    <select
+                      value={newProduct.condition}
+                      onChange={(e) => setNewProduct({...newProduct, condition: e.target.value as 'Good' | 'Damaged' | 'Excellent'})}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        isDark 
+                          ? 'bg-gray-700 border-gray-600 text-white' 
+                          : 'bg-white border-gray-300 text-gray-900'
+                      }`}
+                    >
+                      <option value="Excellent">Excellent</option>
+                      <option value="Good">Good</option>
+                      <option value="Damaged">Damaged</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Value (USD)
+                    </label>
+                    <input
+                      type="number"
+                      value={newProduct.value}
+                      onChange={(e) => setNewProduct({...newProduct, value: parseFloat(e.target.value) || 0})}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        isDark 
+                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                          : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                      }`}
+                      placeholder="0.00"
+                      min="0"
+                      step="0.01"
+                    />
+                  </div>
+
+                  <div>
+                    <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Barcode
+                    </label>
+                    <input
+                      type="text"
+                      value={newProduct.barcode}
+                      onChange={(e) => setNewProduct({...newProduct, barcode: e.target.value})}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        isDark 
+                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                          : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                      }`}
+                      placeholder="Product barcode"
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label className={`block text-sm font-medium mb-1 ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>
+                      Description
+                    </label>
+                    <textarea
+                      value={newProduct.description}
+                      onChange={(e) => setNewProduct({...newProduct, description: e.target.value})}
+                      rows={3}
+                      className={`w-full px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${
+                        isDark 
+                          ? 'bg-gray-700 border-gray-600 text-white placeholder-gray-400' 
+                          : 'bg-white border-gray-300 text-gray-900 placeholder-gray-500'
+                      }`}
+                      placeholder="Product description..."
+                    />
+                  </div>
+                </div>
+
+                <div className="flex gap-3 mt-6">
+                  <button
+                    onClick={() => setShowProductModal(false)}
+                    className={`flex-1 px-4 py-2 border rounded-lg transition-colors ${
+                      isDark 
+                        ? 'border-gray-600 text-gray-300 hover:bg-gray-700' 
+                        : 'border-gray-300 text-gray-700 hover:bg-gray-50'
+                    }`}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleAddProduct}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                  >
+                    Add Product
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Container Contents Modal */}
+          {showContainerModal && selectedContainer && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+              <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg p-6 w-full max-w-4xl max-h-[90vh] overflow-y-auto`}>
+                <div className="flex justify-between items-center mb-6">
+                  <h3 className={`text-xl font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                    Container Contents: {selectedContainer}
+                  </h3>
+                  <button
+                    onClick={() => setShowContainerModal(false)}
+                    className={`text-gray-400 hover:text-gray-600 ${isDark ? 'hover:text-gray-300' : ''}`}
+                  >
+                    ✕
+                  </button>
+                </div>
+
+                {(() => {
+                  const container = getContainerContents(selectedContainer);
+                  if (!container) {
+                    return (
+                      <div className="text-center py-8">
+                        <Package className={`mx-auto h-12 w-12 ${isDark ? 'text-gray-400' : 'text-gray-400'} mb-4`} />
+                        <p className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>
+                          No products found in this container.
+                        </p>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div>
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                        <div className={`p-4 rounded-lg ${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                          <div className="flex items-center gap-2">
+                            <Package className="h-5 w-5 text-blue-600" />
+                            <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Total Items</span>
+                          </div>
+                          <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>{container.totalItems}</p>
+                        </div>
+                        <div className={`p-4 rounded-lg ${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                          <div className="flex items-center gap-2">
+                            <span className="text-green-600">$</span>
+                            <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Total Value</span>
+                          </div>
+                          <p className={`text-2xl font-bold ${isDark ? 'text-white' : 'text-gray-900'}`}>${container.totalValue.toLocaleString()}</p>
+                        </div>
+                        <div className={`p-4 rounded-lg ${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
+                          <div className="flex items-center gap-2">
+                            {container.isLocked ? <Lock className="h-5 w-5 text-red-600" /> : <Unlock className="h-5 w-5 text-green-600" />}
+                            <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Status</span>
+                          </div>
+                          <p className={`text-2xl font-bold ${container.isLocked ? 'text-red-600' : 'text-green-600'}`}>
+                            {container.isLocked ? 'Locked' : 'Unlocked'}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="overflow-x-auto">
+                        <table className={`min-w-full divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-200'}`}>
+                          <thead className={isDark ? 'bg-gray-700' : 'bg-gray-50'}>
+                            <tr>
+                              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>Product</th>
+                              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>Type</th>
+                              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>Quantity</th>
+                              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>Condition</th>
+                              <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>Value</th>
+                            </tr>
+                          </thead>
+                          <tbody className={`${isDark ? 'bg-gray-800 divide-gray-700' : 'bg-white divide-gray-200'} divide-y`}>
+                            {container.products.map((product) => (
+                              <tr key={product.id} className={isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}>
+                                <td className={`px-6 py-4 whitespace-nowrap ${isDark ? 'text-white' : 'text-gray-900'}`}>
+                                  <div>
+                                    <div className="font-medium">{product.name}</div>
+                                    {product.description && (
+                                      <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{product.description}</div>
+                                    )}
+                                  </div>
+                                </td>
+                                <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
+                                  {product.type}
+                                </td>
+                                <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
+                                  {product.quantity} {product.unit}
+                                </td>
+                                <td className="px-6 py-4 whitespace-nowrap">
+                                  <span className={`inline-flex px-2 py-1 text-xs font-semibold rounded-full ${
+                                    product.condition === 'Excellent' ? 'bg-green-100 text-green-800' :
+                                    product.condition === 'Good' ? 'bg-blue-100 text-blue-800' :
+                                    'bg-red-100 text-red-800'
+                                  }`}>
+                                    {product.condition}
+                                  </span>
+                                </td>
+                                <td className={`px-6 py-4 whitespace-nowrap text-sm ${isDark ? 'text-gray-300' : 'text-gray-900'}`}>
+                                  ${product.value?.toLocaleString() || '0'}
+                                </td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+
+                      <div className="flex justify-between items-center mt-6">
+                        <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-600'}`}>
+                          Last updated: {container.lastUpdated}
+                        </div>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={() => exportManifest(selectedContainer)}
+                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
+                          >
+                            <Download className="h-4 w-4" />
+                            Export Manifest
+                          </button>
+                          <button
+                            onClick={() => toggleContainerLock(selectedContainer)}
+                            className={`px-4 py-2 rounded-lg transition-colors flex items-center gap-2 ${
+                              container.isLocked
+                                ? 'bg-red-600 hover:bg-red-700 text-white'
+                                : 'bg-blue-600 hover:bg-blue-700 text-white'
+                            }`}
+                          >
+                            {container.isLocked ? <Unlock className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
+                            {container.isLocked ? 'Unlock' : 'Lock'} Container
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                <div className="flex justify-end mt-6">
+                  <button
+                    onClick={() => setShowContainerModal(false)}
+                    className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-lg transition-colors"
+                  >
+                    Close
                   </button>
                 </div>
               </div>

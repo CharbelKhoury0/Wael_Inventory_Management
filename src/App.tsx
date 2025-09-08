@@ -9,30 +9,30 @@ import SettingsPage from './components/SettingsPage';
 
 // Warehouse data structure
 const WAREHOUSE_DATA = {
-  'Main Warehouse': {
-    address: '123 Industrial Blvd, City Center',
+  'Port of Beirut Terminal': {
+    address: 'Beirut Port Complex, Karantina District, Beirut',
     capacity: '50,000 sq ft',
-    manager: 'Sarah Johnson',
-    contact: '+1 (555) 123-4567',
-    hours: '24/7 Operations',
+    manager: 'Ahmad Khalil',
+    contact: '+961 1 580-211',
+    hours: '24/7 Port Operations',
     status: 'Active',
     utilization: '85%'
   },
-  'Secondary Storage': {
-    address: '456 Storage Ave, North District',
+  'Tripoli Maritime Hub': {
+    address: 'Port of Tripoli, Al-Mina District, Tripoli',
     capacity: '25,000 sq ft',
-    manager: 'Mike Chen',
-    contact: '+1 (555) 987-6543',
-    hours: 'Mon-Fri 8AM-6PM',
+    manager: 'Fatima Nasrallah',
+    contact: '+961 6 601-425',
+    hours: 'Mon-Fri 6AM-8PM',
     status: 'Active',
     utilization: '72%'
   },
-  'Distribution Center': {
-    address: '789 Logistics Way, South Zone',
+  'Sidon Logistics Center': {
+    address: 'Sidon Port Authority, Saida Industrial Zone',
     capacity: '75,000 sq ft',
-    manager: 'Emily Rodriguez',
-    contact: '+1 (555) 456-7890',
-    hours: 'Mon-Sat 6AM-10PM',
+    manager: 'Omar Hariri',
+    contact: '+961 7 720-156',
+    hours: 'Mon-Sat 5AM-11PM',
     status: 'Active',
     utilization: '91%'
   }
@@ -72,8 +72,8 @@ interface WarehouseContextType {
 }
 
 const WarehouseContext = createContext<WarehouseContextType>({
-  currentWarehouse: 'Main Warehouse',
-  warehouseData: WAREHOUSE_DATA['Main Warehouse'],
+  currentWarehouse: 'Port of Beirut Terminal',
+  warehouseData: WAREHOUSE_DATA['Port of Beirut Terminal'],
   allWarehouses: WAREHOUSE_DATA,
   setCurrentWarehouse: () => {}
 });
@@ -81,8 +81,18 @@ const WarehouseContext = createContext<WarehouseContextType>({
 export const useWarehouse = () => useContext(WarehouseContext);
 
 function App() {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [currentPage, setCurrentPage] = useState('dashboard');
+  const [isLoggedIn, setIsLoggedIn] = useState(() => {
+    // Load login state from localStorage on app start
+    const savedLoginState = localStorage.getItem('user-logged-in');
+    return savedLoginState === 'true';
+  });
+  
+  const [currentPage, setCurrentPage] = useState(() => {
+    // Load current page from localStorage on app start
+    const savedPage = localStorage.getItem('current-page');
+    const validPages = ['dashboard', 'items', 'transactions', 'receipts', 'movements', 'settings'];
+    return savedPage && validPages.includes(savedPage) ? savedPage : 'dashboard';
+  });
   const [isDark, setIsDark] = useState(() => {
     // Load theme from localStorage on app start
     const savedTheme = localStorage.getItem('app-theme');
@@ -98,7 +108,7 @@ function App() {
     const savedWarehouse = localStorage.getItem('selected-warehouse');
     return savedWarehouse && WAREHOUSE_DATA[savedWarehouse as keyof typeof WAREHOUSE_DATA] 
       ? savedWarehouse 
-      : 'Main Warehouse';
+      : 'Port of Beirut Terminal';
   });
   
   const warehouseData = WAREHOUSE_DATA[currentWarehouse as keyof typeof WAREHOUSE_DATA];
@@ -121,6 +131,11 @@ function App() {
     }
   }, [isDark]);
 
+  // Save login state to localStorage whenever it changes
+  useEffect(() => {
+    localStorage.setItem('user-logged-in', isLoggedIn.toString());
+  }, [isLoggedIn]);
+
   const toggleTheme = () => {
     setIsDark(!isDark);
   };
@@ -140,10 +155,17 @@ function App() {
 
   const handleLogout = () => {
     setIsLoggedIn(false);
+    localStorage.removeItem('user-logged-in');
+    localStorage.removeItem('current-page');
+    setCurrentPage('dashboard');
   };
 
   const handlePageChange = (page: string) => {
-    setCurrentPage(page);
+    const validPages = ['dashboard', 'items', 'transactions', 'receipts', 'movements', 'settings'];
+    if (validPages.includes(page)) {
+      setCurrentPage(page);
+      localStorage.setItem('current-page', page);
+    }
   };
 
   const themeClasses = {

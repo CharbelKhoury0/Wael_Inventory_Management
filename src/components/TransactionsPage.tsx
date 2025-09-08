@@ -31,24 +31,24 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
     {
       id: 'TXN-2025-001',
       type: 'Inbound',
-      itemName: 'Industrial Safety Helmets',
+      itemName: 'Maritime Safety Helmets',
       quantity: 150,
       date: '2025-01-15',
       time: '09:30 AM',
-      user: 'Sarah Johnson',
+      user: 'Ahmad Khalil',
       reference: 'PO-4821',
-      supplier: 'SafetyFirst Corp'
+      supplier: 'Beirut Marine Safety Co'
     },
     {
       id: 'TXN-2025-002',
       type: 'Outbound',
-      itemName: 'Steel Wire Mesh Rolls',
+      itemName: 'Container Securing Chains',
       quantity: 75,
       date: '2025-01-15',
       time: '11:15 AM',
-      user: 'Mike Chen',
+      user: 'Fatima Nasrallah',
       reference: 'SO-3394',
-      supplier: 'BuildCorp Ltd'
+      supplier: 'Mediterranean Shipping Supplies'
     },
     {
       id: 'TXN-2025-003',
@@ -57,7 +57,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
       quantity: 200,
       date: '2025-01-14',
       time: '02:45 PM',
-      user: 'Sarah Johnson',
+      user: 'Zeina Makdisi',
       reference: 'PO-4822',
       supplier: 'FilterTech Inc'
     },
@@ -68,7 +68,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
       quantity: 500,
       date: '2025-01-14',
       time: '10:20 AM',
-      user: 'David Rodriguez',
+      user: 'Karim Harb',
       reference: 'SO-3395',
       supplier: 'FastenCorp'
     },
@@ -79,7 +79,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
       quantity: -15,
       date: '2025-01-13',
       time: '03:10 PM',
-      user: 'Lisa Wang',
+      user: 'Lara Khoury',
       reference: 'ADJ-1205',
     },
     {
@@ -89,7 +89,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
       quantity: 120,
       date: '2025-01-13',
       time: '08:45 AM',
-      user: 'Mike Chen',
+      user: 'Sami Nassar',
       reference: 'SO-3396',
       supplier: 'WorkGear Plus'
     },
@@ -100,7 +100,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
       quantity: 85,
       date: '2025-01-12',
       time: '01:20 PM',
-      user: 'Sarah Johnson',
+      user: 'Zeina Makdisi',
       reference: 'PO-4823',
       supplier: 'ToolMaster Inc'
     },
@@ -111,7 +111,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
       quantity: 5,
       date: '2025-01-12',
       time: '04:30 PM',
-      user: 'David Rodriguez',
+      user: 'Lara Khoury',
       reference: 'ADJ-1206',
     },
     {
@@ -121,7 +121,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
       quantity: 50,
       date: '2025-01-11',
       time: '09:15 AM',
-      user: 'Lisa Wang',
+      user: 'Karim Harb',
       reference: 'SO-3397',
       supplier: 'ElectroSupply Co'
     },
@@ -132,7 +132,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
       quantity: 65,
       date: '2025-01-11',
       time: '11:45 AM',
-      user: 'Mike Chen',
+      user: 'Sami Nassar',
       reference: 'PO-4824',
       supplier: 'MeasurePro Ltd'
     },
@@ -143,7 +143,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
       quantity: 25,
       date: '2025-01-10',
       time: '02:10 PM',
-      user: 'Sarah Johnson',
+      user: 'Zeina Makdisi',
       reference: 'SO-3398',
       supplier: 'Construction Co'
     },
@@ -154,7 +154,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
       quantity: -8,
       date: '2025-01-10',
       time: '10:30 AM',
-      user: 'David Rodriguez',
+      user: 'Karim Harb',
       reference: 'ADJ-1207',
     },
     {
@@ -164,7 +164,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
       quantity: 200,
       date: '2025-01-09',
       time: '03:45 PM',
-      user: 'Lisa Wang',
+      user: 'Lara Khoury',
       reference: 'PO-4825',
       supplier: 'VisionSafe Corp'
     },
@@ -175,7 +175,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
       quantity: 30,
       date: '2025-01-09',
       time: '08:20 AM',
-      user: 'Mike Chen',
+      user: 'Sami Nassar',
       reference: 'SO-3399',
       supplier: 'Workshop Ltd'
     },
@@ -186,7 +186,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
       quantity: 500,
       date: '2025-01-08',
       time: '01:15 PM',
-      user: 'Sarah Johnson',
+      user: 'Zeina Makdisi',
       reference: 'PO-4826',
       supplier: 'WeldTech Industries'
     },
@@ -197,7 +197,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
       quantity: 3,
       date: '2025-01-08',
       time: '04:50 PM',
-      user: 'David Rodriguez',
+      user: 'Karim Harb',
       reference: 'ADJ-1208',
     }
   ];
@@ -222,13 +222,13 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
   const getTypeColor = (type: string) => {
     switch (type) {
       case 'Inbound':
-        return 'bg-green-100 text-green-800';
+        return isDark ? 'bg-green-900 text-green-200' : 'bg-green-100 text-green-800';
       case 'Outbound':
-        return 'bg-red-100 text-red-800';
+        return isDark ? 'bg-red-900 text-red-200' : 'bg-red-100 text-red-800';
       case 'Adjustment':
-        return 'bg-blue-100 text-blue-800';
+        return isDark ? 'bg-blue-900 text-blue-200' : 'bg-blue-100 text-blue-800';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return isDark ? 'bg-gray-700 text-gray-300' : 'bg-gray-100 text-gray-800';
     }
   };
 
@@ -283,17 +283,17 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
             </div>
 
             {/* Filter Bar */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+            <div className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl shadow-sm border p-6 mb-6`}>
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div className="flex items-center space-x-4">
                   <div className="flex items-center space-x-2">
-                    <Filter className="h-5 w-5 text-gray-400" />
-                    <span className="text-sm font-medium text-gray-700">Filter by type:</span>
+                    <Filter className={`h-5 w-5 ${isDark ? 'text-gray-400' : 'text-gray-400'}`} />
+                    <span className={`text-sm font-medium ${isDark ? 'text-gray-300' : 'text-gray-700'}`}>Filter by type:</span>
                   </div>
                   <select
                     value={filterType}
                     onChange={(e) => setFilterType(e.target.value)}
-                    className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className={`px-3 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent ${isDark ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
                   >
                     <option value="All">All Transactions</option>
                     <option value="Inbound">Inbound</option>
@@ -302,7 +302,7 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
                   </select>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <button className="flex items-center px-4 py-2 text-sm border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors">
+                  <button className={`flex items-center px-4 py-2 text-sm border rounded-lg transition-colors ${isDark ? 'border-gray-600 text-gray-300 hover:bg-gray-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}>
                     <Calendar className="h-4 w-4 mr-2" />
                     Date Range
                   </button>
@@ -315,25 +315,25 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
             </div>
 
             {/* Transactions Table */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-200">
-              <div className="px-6 py-4 border-b border-gray-200">
+            <div className={`${isDark ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'} rounded-xl shadow-sm border`}>
+              <div className={`px-6 py-4 border-b ${isDark ? 'border-gray-700' : 'border-gray-200'}`}>
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-lg font-semibold text-gray-900">Transaction Records</h2>
-                    <p className="text-sm text-gray-500">Showing {filteredTransactions.length} transactions</p>
+                    <h2 className={`text-lg font-semibold ${isDark ? 'text-white' : 'text-gray-900'}`}>Transaction Records</h2>
+                    <p className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>Showing {filteredTransactions.length} transactions</p>
                   </div>
                   <div className="flex items-center space-x-4 text-sm">
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-green-500 rounded-full mr-2"></div>
-                      <span className="text-gray-600">Inbound</span>
+                      <span className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Inbound</span>
                     </div>
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-red-500 rounded-full mr-2"></div>
-                      <span className="text-gray-600">Outbound</span>
+                      <span className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Outbound</span>
                     </div>
                     <div className="flex items-center">
                       <div className="w-3 h-3 bg-blue-500 rounded-full mr-2"></div>
-                      <span className="text-gray-600">Adjustment</span>
+                      <span className={`${isDark ? 'text-gray-300' : 'text-gray-600'}`}>Adjustment</span>
                     </div>
                   </div>
                 </div>
@@ -341,37 +341,37 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
 
               <div className="overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50">
+                  <thead className={`${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
                     <tr>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
                         Transaction ID
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
                         Type
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
                         Item Name
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
                         Quantity
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
                         Date & Time
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
                         User
                       </th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
                         Reference
                       </th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className={`${isDark ? 'bg-gray-800' : 'bg-white'} divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-200'}`}>
                     {filteredTransactions.map((transaction) => (
-                      <tr key={transaction.id} className="hover:bg-gray-50 transition-colors">
+                      <tr key={transaction.id} className={`transition-colors ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-gray-900">{transaction.id}</div>
-                        </td>
+                           <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.id}</div>
+                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="flex items-center">
                             <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getTypeColor(transaction.type)}`}>
@@ -381,33 +381,33 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <div>
-                            <div className="text-sm font-medium text-gray-900">{transaction.itemName}</div>
-                            {transaction.supplier && (
-                              <div className="text-sm text-gray-500">{transaction.supplier}</div>
-                            )}
-                          </div>
-                        </td>
+                           <div>
+                             <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.itemName}</div>
+                             {transaction.supplier && (
+                               <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{transaction.supplier}</div>
+                             )}
+                           </div>
+                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className={`text-sm font-semibold ${getQuantityColor(transaction.type, transaction.quantity)}`}>
                             {formatQuantity(transaction.type, transaction.quantity)}
                           </div>
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{transaction.date}</div>
-                          <div className="text-sm text-gray-500">{transaction.time}</div>
-                        </td>
+                           <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.date}</div>
+                           <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{transaction.time}</div>
+                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="bg-blue-50 p-1 rounded-full mr-2">
-                              <User className="h-3 w-3 text-blue-600" />
-                            </div>
-                            <div className="text-sm text-gray-900">{transaction.user}</div>
-                          </div>
-                        </td>
+                           <div className="flex items-center">
+                             <div className={`${isDark ? 'bg-blue-900' : 'bg-blue-50'} p-1 rounded-full mr-2`}>
+                               <User className={`h-3 w-3 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
+                             </div>
+                             <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.user}</div>
+                           </div>
+                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="text-sm text-gray-900">{transaction.reference}</div>
-                        </td>
+                           <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.reference}</div>
+                         </td>
                       </tr>
                     ))}
                   </tbody>

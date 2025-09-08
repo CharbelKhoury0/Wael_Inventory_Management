@@ -71,8 +71,8 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, currentPage, onPageC
               <Package className="h-6 w-6 text-white" />
             </div>
             <div className="ml-3">
-              <h2 className={`text-lg font-bold ${themeClasses.title}`}>WarehousePro</h2>
-              <p className={`text-xs ${themeClasses.subtitle}`}>Inventory System</p>
+              <h2 className={`text-lg font-bold ${themeClasses.title}`}>Cedar Maritime</h2>
+              <p className={`text-xs ${themeClasses.subtitle}`}>Shipping & Logistics</p>
             </div>
           </div>
           <button
