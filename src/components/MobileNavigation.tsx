@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { useTheme } from '../contexts/ThemeContext';
+import { useEnhancedTheme } from '../contexts/ThemeContext';
 import TouchGestureHandler, { hapticFeedback } from './TouchGestureHandler';
 import {
   Home,

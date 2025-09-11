@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useTheme } from '../contexts/ThemeContext';
+import { useEnhancedTheme } from '../contexts/ThemeContext';
 import TouchGestureHandler, { hapticFeedback } from './TouchGestureHandler';
 import {
   Search,
@@ -30,7 +30,8 @@ export const MobileModal: React.FC<MobileModalProps> = ({
   size = 'md',
   showCloseButton = true
 }) => {
-  const { isDark } = useTheme();
+  const { isDark, getThemeClasses } = useEnhancedTheme();
+  const themeClasses = getThemeClasses();
   const [isAnimating, setIsAnimating] = useState(false);
 
   useEffect(() => {
@@ -142,7 +143,8 @@ export const MobileInput: React.FC<MobileInputProps> = ({
   required = false,
   disabled = false
 }) => {
-  const { isDark } = useTheme();
+  const { isDark, getThemeClasses } = useEnhancedTheme();
+  const themeClasses = getThemeClasses();
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -231,7 +233,8 @@ export const MobileButton: React.FC<MobileButtonProps> = ({
   fullWidth = false,
   icon
 }) => {
-  const { isDark } = useTheme();
+  const { isDark, getThemeClasses } = useEnhancedTheme();
+  const themeClasses = getThemeClasses();
 
   const handleClick = () => {
     if (!disabled && !loading && onClick) {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useEnhancedTheme } from '../../contexts/ThemeContext';
 import { useDesignTokens } from '../../utils/designTokens';
-import { Animated, HoverScale } from './AnimationSystem';
+import { HoverScale } from './AnimationSystem';
 import {
   LayoutDashboard,
   Package,

@@ -1,14 +1,31 @@
 import jsPDF from 'jspdf';
 import 'jspdf-autotable';
-import html2canvas from 'html2canvas';
 import type { Item, Movement, Transaction, Alert } from '../store/inventoryStore';
 import type { PredictionResult, InventoryOptimization } from './predictiveAnalytics';
 
 // Extend jsPDF type to include autoTable
 declare module 'jspdf' {
   interface jsPDF {
-    autoTable: (options: any) => jsPDF;
+    autoTable: (options: AutoTableOptions) => jsPDF;
   }
+}
+
+interface AutoTableOptions {
+  startY?: number;
+  head?: string[][];
+  body?: string[][];
+  theme?: string;
+  headStyles?: Record<string, unknown>;
+  bodyStyles?: Record<string, unknown>;
+  columnStyles?: Record<string, unknown>;
+  styles?: Record<string, unknown>;
+  margin?: { top?: number; right?: number; bottom?: number; left?: number };
+  pageBreak?: string;
+  showHead?: boolean;
+  showFoot?: boolean;
+  tableWidth?: string | number;
+  tableLineColor?: number[];
+  tableLineWidth?: number;
 }
 
 export interface ReportConfig {
@@ -216,7 +233,7 @@ export class PDFReportGenerator {
         5: { cellWidth: 25, halign: 'right' },
         6: { cellWidth: 15, halign: 'center' }
       },
-      didDrawCell: (data: any) => {
+      didDrawCell: (data: { column: { index: number }; cell: { raw: string } }) => {
         if (data.column.index === 6 && data.cell.raw === 'Low') {
           this.doc.setTextColor(239, 68, 68);
           this.doc.setFont('helvetica', 'bold');
@@ -224,7 +241,7 @@ export class PDFReportGenerator {
       }
     });
     
-    this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+    this.currentY = (this.doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
   }
 
   private addMovementsTable(movements: Movement[]): void {
@@ -275,7 +292,7 @@ export class PDFReportGenerator {
       }
     });
     
-    this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+    this.currentY = (this.doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
   }
 
   private addPredictionsTable(predictions: PredictionResult[]): void {
@@ -326,7 +343,7 @@ export class PDFReportGenerator {
         5: { cellWidth: 20, halign: 'center' },
         6: { cellWidth: 25, halign: 'center' }
       },
-      didDrawCell: (data: any) => {
+      didDrawCell: (data: { column: { index: number }; cell: { raw: string } }) => {
         if (data.column.index === 5) {
           const risk = parseInt(data.cell.raw.replace('%', ''));
           if (risk > 50) {
@@ -337,7 +354,7 @@ export class PDFReportGenerator {
       }
     });
     
-    this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+    this.currentY = (this.doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
   }
 
   private addRecommendations(optimization: InventoryOptimization): void {
@@ -412,7 +429,7 @@ export class PDFReportGenerator {
         }
       });
       
-      this.currentY = (this.doc as any).lastAutoTable.finalY + 10;
+      this.currentY = (this.doc as jsPDF & { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 10;
     }
   }
 

@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { useTheme } from '../contexts/ThemeContext';
+import { useEnhancedTheme } from '../contexts/ThemeContext';
 import InteractiveChart from './InteractiveCharts';
 import {
   TrendingUp,

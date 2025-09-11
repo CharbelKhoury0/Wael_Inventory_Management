@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
-import { useTheme } from '../contexts/ThemeContext';
+import { useEnhancedTheme } from '../contexts/ThemeContext';
 import { DragDropContext, Droppable, Draggable, DropResult } from 'react-beautiful-dnd';
 import InteractiveChart from './InteractiveCharts';
 import {

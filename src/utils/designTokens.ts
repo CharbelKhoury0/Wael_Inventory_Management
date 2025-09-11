@@ -273,8 +273,8 @@ export const createStyleObject = (tokens: DesignTokens) => ({
   font: (weight: keyof typeof designTokens.typography.fontWeight) => ({ fontWeight: tokens.typography.fontWeight[weight] }),
   
   // Color utilities
-  bg: (category: string, key?: string, shade?: string) => ({ backgroundColor: tokens.colors.get(category as any, key, shade) }),
-  color: (category: string, key?: string, shade?: string) => ({ color: tokens.colors.get(category as any, key, shade) }),
+  bg: (category: string, key?: string, shade?: string) => ({ backgroundColor: tokens.colors.get(category as keyof typeof tokens.config.colors, key, shade) }),
+  color: (category: string, key?: string, shade?: string) => ({ color: tokens.colors.get(category as keyof typeof tokens.config.colors, key, shade) }),
   
   // Border utilities
   rounded: (size: keyof typeof designTokens.borderRadius) => ({ borderRadius: tokens.borderRadius.get(size) }),
@@ -321,12 +321,12 @@ export const generateTailwindClasses = (tokens: DesignTokens) => ({
   
   // Color classes
   bg: (category: string, key?: string, shade?: string) => {
-    const color = tokens.colors.get(category as any, key, shade);
+    const color = tokens.colors.get(category as keyof typeof tokens.config.colors, key, shade);
     return `bg-[${color}]`;
   },
   
   text: (category: string, key?: string, shade?: string) => {
-    const color = tokens.colors.get(category as any, key, shade);
+    const color = tokens.colors.get(category as keyof typeof tokens.config.colors, key, shade);
     return `text-[${color}]`;
   },
   

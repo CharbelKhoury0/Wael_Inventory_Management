@@ -1,5 +1,5 @@
 import React, { useState, useCallback, useMemo, useRef } from 'react';
-import { useTheme } from '../contexts/ThemeContext';
+import { useEnhancedTheme } from '../contexts/ThemeContext';
 import {
   BarChart,
   Bar,

@@ -6,14 +6,14 @@ export interface PrintColumn {
   label: string;
   width?: string;
   align?: 'left' | 'center' | 'right';
-  format?: (value: any) => string;
+  format?: (value: unknown) => string;
 }
 
 export interface PrintOptions {
   title: string;
   subtitle?: string;
   columns: PrintColumn[];
-  data: any[];
+  data: Record<string, unknown>[];
   includeTimestamp?: boolean;
   includeFooter?: boolean;
   pageSize?: 'A4' | 'Letter' | 'A5';

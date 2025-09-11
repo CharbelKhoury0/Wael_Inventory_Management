@@ -1,5 +1,5 @@
 import React, { useState, useMemo, useCallback } from 'react';
-import { useTheme } from '../contexts/ThemeContext';
+import { useEnhancedTheme } from '../contexts/ThemeContext';
 import { useWarehouse } from '../App';
 import { useInventory } from '../hooks/useInventory';
 import TopNav from './TopNav';
@@ -105,7 +105,8 @@ const MetricCard: React.FC<MetricCardProps> = ({
   trend = change >= 0 ? 'up' : 'down',
   subtitle 
 }) => {
-  const { isDark } = useTheme();
+  const { isDark, getThemeClasses } = useEnhancedTheme();
+  const themeClasses = getThemeClasses();
   const isPositive = trend === 'up';
   const isStable = trend === 'stable';
 
@@ -150,7 +151,8 @@ const MetricCard: React.FC<MetricCardProps> = ({
 };
 
 const AdvancedAnalyticsDashboard: React.FC<AdvancedAnalyticsProps> = ({ onLogout, onPageChange }) => {
-  const { isDark } = useTheme();
+  const { isDark, getThemeClasses } = useEnhancedTheme();
+  const themeClasses = getThemeClasses();
   const { currentWarehouse, warehouseData } = useWarehouse();
   const { items, movements, transactions, stats } = useInventory();
   const [sidebarOpen, setSidebarOpen] = useState(false);

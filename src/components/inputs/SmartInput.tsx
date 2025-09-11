@@ -109,7 +109,7 @@ const SmartInput: React.FC<SmartInputProps> = ({
     } = numberFormat;
     
     // Remove existing formatting
-    let numStr = val.replace(/[^\d.-]/g, '');
+    const numStr = val.replace(/[^\d.-]/g, '');
     
     if (numStr === '' || numStr === '-') return numStr;
     
@@ -129,7 +129,7 @@ const SmartInput: React.FC<SmartInputProps> = ({
     const parts = constrainedNum.toFixed(decimals).split('.');
     parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, thousandsSeparator);
     
-    let formatted = parts.join(decimalSeparator);
+    const formatted = parts.join(decimalSeparator);
     
     return `${prefix}${formatted}${suffix}`;
   }, [numberFormat, type]);

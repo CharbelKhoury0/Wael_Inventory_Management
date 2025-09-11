@@ -33,7 +33,7 @@ import {
   TrendingDown,
   Minus
 } from 'lucide-react';
-import { useTheme } from '../contexts/ThemeContext';
+import { useEnhancedTheme } from '../contexts/ThemeContext';
 import { useInventory } from '../hooks/useInventory';
 import Sidebar from './Sidebar';
 import TopNav from './TopNav';

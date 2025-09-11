@@ -6,12 +6,12 @@ import ItemsPage from './components/ItemsPage';
 import TransactionsPage from './components/TransactionsPage';
 import ReceiptsPage from './components/ReceiptsPage';
 import MovementsPage from './components/MovementsPage';
-import AnalyticsDashboard from './components/AnalyticsDashboard';
+// Removed unused import of AnalyticsDashboard
 import ReportingDashboard from './components/ReportingDashboard';
 import SettingsPage from './components/SettingsPage';
 import MobileNavigation from './components/MobileNavigation';
 import { NotificationProvider } from './contexts/NotificationContext';
-import { EnhancedThemeProvider, useTheme } from './contexts/ThemeContext';
+import { EnhancedThemeProvider, useEnhancedTheme } from './contexts/ThemeContext';
 import { useTouchGestures } from './components/TouchGestureHandler';
 
 // Warehouse data structure
@@ -222,7 +222,7 @@ const AppContent: React.FC<AppContentProps> = ({
   handleRefresh,
   isRefreshing
 }) => {
-  const { getThemeClasses } = useTheme();
+  const { getThemeClasses } = useEnhancedTheme();
   const themeClasses = getThemeClasses();
 
   return (
@@ -236,7 +236,7 @@ const AppContent: React.FC<AppContentProps> = ({
               <Dashboard onLogout={handleLogout} onPageChange={handlePageChange} />
             )}
             {currentPage === 'items' && (
-              <ItemsPage onLogout={handleLogout} onPageChange={handlePageChange} />
+              <ItemsPage />
             )}
             {currentPage === 'transactions' && (
               <TransactionsPage onLogout={handleLogout} onPageChange={handlePageChange} />

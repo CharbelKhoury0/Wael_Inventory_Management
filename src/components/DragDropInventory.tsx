@@ -115,7 +115,7 @@ const DragDropInventory: React.FC<DragDropInventoryProps> = ({
 
   // Filter and sort items
   const filteredItems = useMemo(() => {
-    let filtered = items.filter(item => {
+    const filtered = items.filter(item => {
       // Search filter
       if (filters.search) {
         const searchLower = filters.search.toLowerCase();

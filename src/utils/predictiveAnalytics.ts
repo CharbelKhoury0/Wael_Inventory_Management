@@ -151,13 +151,13 @@ export class PredictiveAnalyticsEngine {
     const seasonalIndices = this.calculateSeasonalIndex(historicalDemand);
     const trend = this.calculateTrend(historicalDemand);
     
-    // Exponential smoothing parameters
-    const alpha = 0.3; // Level smoothing
-    const beta = 0.2;  // Trend smoothing
-    const gamma = 0.1; // Seasonal smoothing
+    // Exponential smoothing parameters (for future implementation)
+    // const alpha = 0.3; // Level smoothing
+    // const beta = 0.2;  // Trend smoothing
+    // const gamma = 0.1; // Seasonal smoothing
     
-    let level = historicalDemand[historicalDemand.length - 1] || 0;
-    let trendComponent = trend.slope;
+    const level = historicalDemand[historicalDemand.length - 1] || 0;
+    const trendComponent = trend.slope;
     
     const forecasts: DemandForecast[] = [];
     

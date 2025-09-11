@@ -5,7 +5,7 @@ export interface ExportColumn {
   key: string;
   label: string;
   width?: number;
-  format?: (value: any) => string;
+  format?: (value: unknown) => string;
 }
 
 export interface ExportOptions {
@@ -13,7 +13,7 @@ export interface ExportOptions {
   title?: string;
   subtitle?: string;
   columns: ExportColumn[];
-  data: any[];
+  data: Record<string, unknown>[];
   includeTimestamp?: boolean;
 }
 
@@ -120,7 +120,7 @@ const generatePDFHTML = (options: {
   title: string;
   subtitle?: string;
   columns: ExportColumn[];
-  data: any[];
+  data: Record<string, unknown>[];
   includeTimestamp: boolean;
 }): string => {
   const { title, subtitle, columns, data, includeTimestamp } = options;
