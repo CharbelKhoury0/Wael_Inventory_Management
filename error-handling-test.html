@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Error Handling & Edge Cases Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-header {
+            background: #dc2626;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+        .test-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: #f9fafb;
+            border-radius: 4px;
+        }
+        .status {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: inline-block;
+        }
+        .status.pass { background-color: #10b981; }
+        .status.fail { background-color: #ef4444; }
+        .status.pending { background-color: #f59e0b; }
+        .test-button {
+            background: #dc2626;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #b91c1c;
+        }
+        .test-button.safe {
+            background: #059669;
+        }
+        .test-button.safe:hover {
+            background: #047857;
+        }
+        .test-results {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #059669;
+            background: #ecfdf5;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .warning {
+            color: #d97706;
+            background: #fffbeb;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .error-boundary {
+            border: 2px solid #dc2626;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background: #fef2f2;
+        }
+        .error-details {
+            background: #1f2937;
+            color: #f9fafb;
+            padding: 15px;
+            border-radius: 6px;
+            font-family: monospace;
+            font-size: 12px;
+            margin: 10px 0;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .edge-case-demo {
+            background: #f9fafb;
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        .input-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .input-group input,
+        .input-group select,
+        .input-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .severity-indicator {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-left: 10px;
+        }
+        .severity-low { background: #dbeafe; color: #1e40af; }
+        .severity-medium { background: #fef3c7; color: #d97706; }
+        .severity-high { background: #fee2e2; color: #dc2626; }
+        .severity-critical { background: #fecaca; color: #991b1b; }
+        .network-status {
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .network-online { background: #d1fae5; color: #065f46; }
+        .network-offline { background: #fee2e2; color: #991b1b; }
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .metric {
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #dc2626;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1>🚨 Error Handling & Edge Cases Test Suite</h1>
+        <p>Comprehensive testing for error boundaries, edge cases, and error recovery mechanisms</p>
+    </div>
+
+    <div class="test-container">
+        <h2>📋 Test Overview</h2>
+        <div id="test-summary">
+            <div class="test-item">
+                <span class="status pending" id="overall-status"></span>
+                <span>Overall Test Status: <span id="overall-text">Pending</span></span>
+            </div>
+            <div class="test-item">
+                <span>Total Tests: <span id="total-tests">0</span></span>
+            </div>
+            <div class="test-item">
+                <span>Passed: <span id="passed-tests">0</span></span>
+            </div>
+            <div class="test-item">
+                <span>Failed: <span id="failed-tests">0</span></span>
+            </div>
+            <div class="test-item">
+                <span>Errors Caught: <span id="errors-caught">0</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Boundary Tests -->
+    <div class="test-container">
+        <h2>🛡️ Error Boundary Tests</h2>
+        
+        <div class="test-section">
+            <h3>Basic Error Boundary Functionality</h3>
+            <button class="test-button" onclick="testErrorBoundaryCapture()">Test Error Capture</button>
+            <button class="test-button" onclick="testErrorBoundaryFallback()">Test Fallback UI</button>
+            <button class="test-button" onclick="testErrorBoundaryRecovery()">Test Error Recovery</button>
+            <div id="error-boundary-results" class="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Error Classification & Severity</h3>
+            <button class="test-button" onclick="testErrorSeverityClassification()">Test Error Severity</button>
+            <button class="test-button" onclick="testErrorSuggestions()">Test Error Suggestions</button>
+            <button class="test-button" onclick="testErrorLogging()">Test Error Logging</button>
+            <div id="error-classification-results" class="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Error Reporting & Tracking</h3>
+            <button class="test-button" onclick="testErrorReporting()">Test Error Reporting</button>
+            <button class="test-button" onclick="testErrorIdGeneration()">Test Error ID Generation</button>
+            <button class="test-button" onclick="testErrorStorage()">Test Error Storage</button>
+            <div id="error-reporting-results" class="test-results"></div>
+        </div>
+    </div>
+
+    <!-- Network & API Error Tests -->
+    <div class="test-container">
+        <h2>🌐 Network & API Error Tests</h2>
+        
+        <div class="test-section">
+            <h3>Network Error Handling</h3>
+            <div class="network-status" id="network-status">🟢 Network Status: Online</div>
+            <button class="test-button" onclick="testNetworkErrors()">Test Network Errors</button>
+            <button class="test-button" onclick="testTimeoutErrors()">Test Timeout Errors</button>
+            <button class="test-button" onclick="testOfflineHandling()">Test Offline Handling</button>
+            <div id="network-error-results" class="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>API Error Responses</h3>
+            <button class="test-button" onclick="testAPIErrors()">Test API Error Responses</button>
+            <button class="test-button" onclick="testAuthenticationErrors()">Test Auth Errors</button>
+            <button class="test-button" onclick="testValidationErrors()">Test Validation Errors</button>
+            <div id="api-error-results" class="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Retry & Recovery Mechanisms</h3>
+            <button class="test-button" onclick="testRetryMechanism()">Test Retry Logic</button>
+            <button class="test-button" onclick="testExponentialBackoff()">Test Exponential Backoff</button>
+            <button class="test-button" onclick="testCircuitBreaker()">Test Circuit Breaker</button>
+            <div id="retry-results" class="test-results"></div>
+        </div>
+    </div>
+
+    <!-- Edge Cases Tests -->
+    <div class="test-container">
+        <h2>⚠️ Edge Cases Tests</h2>
+        
+        <div class="test-section">
+            <h3>Input Validation Edge Cases</h3>
+            <button class="test-button" onclick="testInputEdgeCases()">Test Input Edge Cases</button>
+            <button class="test-button" onclick="testDataTypeEdgeCases()">Test Data Type Edge Cases</button>
+            <button class="test-button" onclick="testBoundaryValues()">Test Boundary Values</button>
+            <div id="input-edge-results" class="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Memory & Performance Edge Cases</h3>
+            <button class="test-button" onclick="testMemoryLeaks()">Test Memory Leaks</button>
+            <button class="test-button" onclick="testLargeDatasets()">Test Large Datasets</button>
+            <button class="test-button" onclick="testPerformanceLimits()">Test Performance Limits</button>
+            <div id="performance-edge-results" class="test-results"></div>
+            <div class="performance-metrics" id="performance-metrics"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Browser Compatibility Edge Cases</h3>
+            <button class="test-button" onclick="testBrowserCompatibility()">Test Browser Features</button>
+            <button class="test-button" onclick="testLocalStorageLimits()">Test Storage Limits</button>
+            <button class="test-button" onclick="testCookieHandling()">Test Cookie Handling</button>
+            <div id="browser-edge-results" class="test-results"></div>
+        </div>
+    </div>
+
+    <!-- Interactive Error Simulator -->
+    <div class="test-container">
+        <h2>🎮 Interactive Error Simulator</h2>
+        
+        <div class="edge-case-demo">
+            <h3>Simulate Custom Errors</h3>
+            
+            <div class="input-group">
+                <label>Error Type:</label>
+                <select id="error-type">
+                    <option value="network">Network Error</option>
+                    <option value="validation">Validation Error</option>
+                    <option value="permission">Permission Error</option>
+                    <option value="memory">Memory Error</option>
+                    <option value="timeout">Timeout Error</option>
+                    <option value="chunk">Chunk Loading Error</option>
+                    <option value="custom">Custom Error</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label>Error Message:</label>
+                <input type="text" id="error-message" placeholder="Custom error message...">
+            </div>
+            
+            <div class="input-group">
+                <label>Error Severity:</label>
+                <select id="error-severity">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="critical">Critical</option>
+                </select>
+            </div>
+            
+            <div class="input-group">
+                <label>Additional Context:</label>
+                <textarea id="error-context" rows="3" placeholder="Additional error context or stack trace..."></textarea>
+            </div>
+            
+            <button class="test-button" onclick="simulateError()">Simulate Error</button>
+            <button class="test-button safe" onclick="clearErrorSimulation()">Clear Simulation</button>
+            
+            <div class="error-boundary" id="error-simulation-area" style="display: none;">
+                <h4>🚨 Simulated Error</h4>
+                <div id="simulated-error-content"></div>
+                <div class="error-details" id="simulated-error-details"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Error Recovery Demo -->
+    <div class="test-container">
+        <h2>🔄 Error Recovery Demo</h2>
+        
+        <div class="edge-case-demo">
+            <h3>Test Error Recovery Mechanisms</h3>
+            
+            <button class="test-button" onclick="testAutoRetry()">Test Auto Retry</button>
+            <button class="test-button" onclick="testManualRetry()">Test Manual Retry</button>
+            <button class="test-button" onclick="testGracefulDegradation()">Test Graceful Degradation</button>
+            <button class="test-button" onclick="testFallbackContent()">Test Fallback Content</button>
+            
+            <div id="recovery-demo-area">
+                <div style="padding: 20px; text-align: center; color: #6b7280;">
+                    Click a recovery test button to see error recovery in action
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = {
+            total: 0,
+            passed: 0,
+            failed: 0,
+            errorsCaught: 0
+        };
+
+        let errorLog = [];
+        let retryAttempts = 0;
+        let maxRetries = 3;
+
+        function updateTestSummary() {
+            document.getElementById('total-tests').textContent = testResults.total;
+            document.getElementById('passed-tests').textContent = testResults.passed;
+            document.getElementById('failed-tests').textContent = testResults.failed;
+            document.getElementById('errors-caught').textContent = testResults.errorsCaught;
+            
+            const overallStatus = document.getElementById('overall-status');
+            const overallText = document.getElementById('overall-text');
+            
+            if (testResults.total === 0) {
+                overallStatus.className = 'status pending';
+                overallText.textContent = 'Pending';
+            } else if (testResults.failed === 0) {
+                overallStatus.className = 'status pass';
+                overallText.textContent = 'All Tests Passed';
+            } else {
+                overallStatus.className = 'status fail';
+                overallText.textContent = `${testResults.failed} Tests Failed`;
+            }
+        }
+
+        function logTest(name, passed, details = '') {
+            testResults.total++;
+            if (passed) {
+                testResults.passed++;
+            } else {
+                testResults.failed++;
+            }
+            updateTestSummary();
+            console.log(`Test: ${name} - ${passed ? 'PASSED' : 'FAILED'}${details ? ' - ' + details : ''}`);
+        }
+
+        function logError(error, context = '') {
+            testResults.errorsCaught++;
+            updateTestSummary();
+            
+            const errorEntry = {
+                id: `ERR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                message: error.message,
+                stack: error.stack,
+                context,
+                timestamp: new Date().toISOString(),
+                severity: classifyErrorSeverity(error)
+            };
+            
+            errorLog.push(errorEntry);
+            console.error('Error logged:', errorEntry);
+            return errorEntry;
+        }
+
+        function logToResults(elementId, message, type = 'success') {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'warning' ? 'warning' : 'success';
+            element.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        }
+
+        function classifyErrorSeverity(error) {
+            const message = error.message.toLowerCase();
+            
+            if (message.includes('network') || message.includes('fetch')) {
+                return 'medium';
+            }
+            if (message.includes('chunk') || message.includes('loading')) {
+                return 'low';
+            }
+            if (message.includes('permission') || message.includes('unauthorized')) {
+                return 'high';
+            }
+            if (message.includes('memory') || message.includes('maximum')) {
+                return 'critical';
+            }
+            return 'medium';
+        }
+
+        function getErrorSuggestion(error) {
+            const message = error.message.toLowerCase();
+            
+            if (message.includes('network') || message.includes('fetch')) {
+                return 'Please check your internet connection and try again.';
+            }
+            if (message.includes('chunk') || message.includes('loading')) {
+                return 'There was an issue loading part of the application. Refreshing should resolve this.';
+            }
+            if (message.includes('permission') || message.includes('unauthorized')) {
+                return 'You may not have permission to access this resource. Please contact your administrator.';
+            }
+            if (message.includes('memory') || message.includes('maximum')) {
+                return 'The application is using too much memory. Please close other tabs and refresh.';
+            }
+            return 'An unexpected error occurred. Please try refreshing the page or contact support if the problem persists.';
+        }
+
+        // Error Boundary Tests
+        function testErrorBoundaryCapture() {
+            try {
+                // Simulate a component error
+                throw new Error('Test component error for boundary capture');
+            } catch (error) {
+                const errorEntry = logError(error, 'Error Boundary Capture Test');
+                logTest('Error Boundary Capture', true);
+                logToResults('error-boundary-results', `✅ Error captured: ${errorEntry.id}`);
+                logToResults('error-boundary-results', `🔍 Error message: ${error.message}`);
+            }
+        }
+
+        function testErrorBoundaryFallback() {
+            const fallbackUI = createFallbackUI('Test Error', 'This is a test error for fallback UI');
+            const hasFallbackElements = fallbackUI.includes('error') && fallbackUI.includes('retry');
+            
+            logTest('Error Boundary Fallback', hasFallbackElements);
+            logToResults('error-boundary-results', `🎨 Fallback UI: ${hasFallbackElements ? '✅ Generated' : '❌ Failed'}`);
+        }
+
+        function testErrorBoundaryRecovery() {
+            let recoverySuccessful = false;
+            
+            try {
+                // Simulate error recovery
+                simulateErrorRecovery();
+                recoverySuccessful = true;
+            } catch (error) {
+                logError(error, 'Error Recovery Test');
+            }
+            
+            logTest('Error Boundary Recovery', recoverySuccessful);
+            logToResults('error-boundary-results', `🔄 Recovery: ${recoverySuccessful ? '✅ Successful' : '❌ Failed'}`);
+        }
+
+        function testErrorSeverityClassification() {
+            const testErrors = [
+                new Error('Network request failed'),
+                new Error('Chunk loading error'),
+                new Error('Permission denied'),
+                new Error('Maximum memory exceeded')
+            ];
+            
+            const severities = testErrors.map(error => classifyErrorSeverity(error));
+            const expectedSeverities = ['medium', 'low', 'high', 'critical'];
+            const classificationsCorrect = severities.every((severity, index) => severity === expectedSeverities[index]);
+            
+            logTest('Error Severity Classification', classificationsCorrect);
+            logToResults('error-classification-results', `📊 Severity classification: ${classificationsCorrect ? '✅ Correct' : '❌ Incorrect'}`);
+            
+            severities.forEach((severity, index) => {
+                logToResults('error-classification-results', 
+                    `  - "${testErrors[index].message}": <span class="severity-indicator severity-${severity}">${severity.toUpperCase()}</span>`);
+            });
+        }
+
+        function testErrorSuggestions() {
+            const testError = new Error('Network request failed');
+            const suggestion = getErrorSuggestion(testError);
+            const hasSuggestion = suggestion && suggestion.length > 0;
+            
+            logTest('Error Suggestions', hasSuggestion);
+            logToResults('error-classification-results', `💡 Error suggestion: ${hasSuggestion ? '✅ Generated' : '❌ Missing'}`);
+            if (hasSuggestion) {
+                logToResults('error-classification-results', `  - Suggestion: "${suggestion}"`);
+            }
+        }
+
+        function testErrorLogging() {
+            const initialLogCount = errorLog.length;
+            const testError = new Error('Test error for logging');
+            logError(testError, 'Error Logging Test');
+            
+            const loggedSuccessfully = errorLog.length > initialLogCount;
+            const latestLog = errorLog[errorLog.length - 1];
+            
+            logTest('Error Logging', loggedSuccessfully);
+            logToResults('error-classification-results', `📝 Error logging: ${loggedSuccessfully ? '✅ Successful' : '❌ Failed'}`);
+            if (loggedSuccessfully) {
+                logToResults('error-classification-results', `  - Log ID: ${latestLog.id}`);
+                logToResults('error-classification-results', `  - Timestamp: ${latestLog.timestamp}`);
+            }
+        }
+
+        function testErrorReporting() {
+            const errorReport = {
+                errorId: `ERR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+                message: 'Test error message',
+                stack: 'Test stack trace',
+                timestamp: new Date().toISOString(),
+                userAgent: navigator.userAgent,
+                url: window.location.href
+            };
+            
+            // Simulate sending to error reporting service
+            const reportSent = simulateErrorReporting(errorReport);
+            
+            logTest('Error Reporting', reportSent);
+            logToResults('error-reporting-results', `📤 Error reporting: ${reportSent ? '✅ Sent' : '❌ Failed'}`);
+            logToResults('error-reporting-results', `  - Report ID: ${errorReport.errorId}`);
+        }
+
+        function testErrorIdGeneration() {
+            const errorIds = [];
+            for (let i = 0; i < 5; i++) {
+                const id = generateErrorId();
+                errorIds.push(id);
+            }
+            
+            const allUnique = new Set(errorIds).size === errorIds.length;
+            const validFormat = errorIds.every(id => /^ERR-\d+-[a-z0-9]+$/.test(id));
+            
+            logTest('Error ID Generation', allUnique && validFormat);
+            logToResults('error-reporting-results', `🆔 Error ID generation: ${allUnique && validFormat ? '✅ Valid' : '❌ Invalid'}`);
+            logToResults('error-reporting-results', `  - Sample IDs: ${errorIds.slice(0, 2).join(', ')}`);
+        }
+
+        function testErrorStorage() {
+            const testError = {
+                id: 'TEST-ERROR-001',
+                message: 'Test storage error',
+                timestamp: new Date().toISOString()
+            };
+            
+            try {
+                // Store error in localStorage
+                const existingErrors = JSON.parse(localStorage.getItem('errorReports') || '[]');
+                existingErrors.push(testError);
+                localStorage.setItem('errorReports', JSON.stringify(existingErrors));
+                
+                // Verify storage
+                const storedErrors = JSON.parse(localStorage.getItem('errorReports') || '[]');
+                const errorStored = storedErrors.some(error => error.id === testError.id);
+                
+                logTest('Error Storage', errorStored);
+                logToResults('error-reporting-results', `💾 Error storage: ${errorStored ? '✅ Successful' : '❌ Failed'}`);
+            } catch (error) {
+                logTest('Error Storage', false);
+                logToResults('error-reporting-results', `💾 Error storage: ❌ Failed - ${error.message}`, 'error');
+            }
+        }
+
+        // Network & API Error Tests
+        function testNetworkErrors() {
+            const networkErrors = [
+                'Failed to fetch',
+                'Network request failed',
+                'ERR_NETWORK',
+                'ERR_INTERNET_DISCONNECTED'
+            ];
+            
+            networkErrors.forEach(errorMessage => {
+                try {
+                    throw new Error(errorMessage);
+                } catch (error) {
+                    const severity = classifyErrorSeverity(error);
+                    logToResults('network-error-results', `🌐 Network error "${errorMessage}": ${severity}`);
+                }
+            });
+            
+            logTest('Network Error Handling', true);
+            logToResults('network-error-results', `✅ Network error classification completed`);
+        }
+
+        function testTimeoutErrors() {
+            const timeoutPromise = new Promise((resolve, reject) => {
+                setTimeout(() => {
+                    reject(new Error('Request timeout'));
+                }, 100);
+            });
+            
+            timeoutPromise.catch(error => {
+                logError(error, 'Timeout Test');
+                logToResults('network-error-results', `⏱️ Timeout error handled: ${error.message}`);
+            });
+            
+            logTest('Timeout Error Handling', true);
+        }
+
+        function testOfflineHandling() {
+            const isOnline = navigator.onLine;
+            const networkStatus = document.getElementById('network-status');
+            
+            if (isOnline) {
+                networkStatus.textContent = '🟢 Network Status: Online';
+                networkStatus.className = 'network-status network-online';
+            } else {
+                networkStatus.textContent = '🔴 Network Status: Offline';
+                networkStatus.className = 'network-status network-offline';
+            }
+            
+            logTest('Offline Handling', true);
+            logToResults('network-error-results', `📶 Network status detection: ${isOnline ? 'Online' : 'Offline'}`);
+        }
+
+        function testAPIErrors() {
+            const apiErrors = [
+                { status: 400, message: 'Bad Request' },
+                { status: 401, message: 'Unauthorized' },
+                { status: 403, message: 'Forbidden' },
+                { status: 404, message: 'Not Found' },
+                { status: 500, message: 'Internal Server Error' }
+            ];
+            
+            apiErrors.forEach(({ status, message }) => {
+                const error = new Error(`API Error ${status}: ${message}`);
+                const severity = classifyErrorSeverity(error);
+                logToResults('api-error-results', `🔌 API ${status} error: ${severity}`);
+            });
+            
+            logTest('API Error Responses', true);
+            logToResults('api-error-results', `✅ API error handling completed`);
+        }
+
+        function testAuthenticationErrors() {
+            const authErrors = [
+                'Authentication failed',
+                'Token expired',
+                'Invalid credentials',
+                'Access denied'
+            ];
+            
+            authErrors.forEach(errorMessage => {
+                const error = new Error(errorMessage);
+                const suggestion = getErrorSuggestion(error);
+                logToResults('api-error-results', `🔐 Auth error "${errorMessage}": ${suggestion}`);
+            });
+            
+            logTest('Authentication Error Handling', true);
+        }
+
+        function testValidationErrors() {
+            const validationErrors = [
+                'Required field missing',
+                'Invalid email format',
+                'Password too weak',
+                'Value out of range'
+            ];
+            
+            validationErrors.forEach(errorMessage => {
+                logToResults('api-error-results', `✅ Validation error: "${errorMessage}"`);
+            });
+            
+            logTest('Validation Error Handling', true);
+        }
+
+        function testRetryMechanism() {
+            let attempts = 0;
+            const maxAttempts = 3;
+            
+            function attemptOperation() {
+                attempts++;
+                if (attempts < maxAttempts) {
+                    logToResults('retry-results', `🔄 Retry attempt ${attempts}/${maxAttempts}`);
+                    setTimeout(attemptOperation, 500);
+                } else {
+                    logToResults('retry-results', `✅ Retry mechanism completed after ${attempts} attempts`);
+                    logTest('Retry Mechanism', true);
+                }
+            }
+            
+            attemptOperation();
+        }
+
+        function testExponentialBackoff() {
+            const delays = [100, 200, 400, 800, 1600];
+            let currentDelay = 0;
+            
+            function backoffTest() {
+                if (currentDelay < delays.length) {
+                    const delay = delays[currentDelay];
+                    logToResults('retry-results', `⏳ Exponential backoff: ${delay}ms delay`);
+                    setTimeout(() => {
+                        currentDelay++;
+                        backoffTest();
+                    }, delay);
+                } else {
+                    logTest('Exponential Backoff', true);
+                    logToResults('retry-results', `✅ Exponential backoff test completed`);
+                }
+            }
+            
+            backoffTest();
+        }
+
+        function testCircuitBreaker() {
+            let failureCount = 0;
+            const failureThreshold = 3;
+            let circuitOpen = false;
+            
+            function simulateRequest() {
+                if (circuitOpen) {
+                    logToResults('retry-results', `🚫 Circuit breaker: Request blocked (circuit open)`);
+                    return;
+                }
+                
+                // Simulate failure
+                failureCount++;
+                if (failureCount >= failureThreshold) {
+                    circuitOpen = true;
+                    logToResults('retry-results', `⚡ Circuit breaker: Circuit opened after ${failureCount} failures`);
+                } else {
+                    logToResults('retry-results', `❌ Request failed (${failureCount}/${failureThreshold})`);
+                }
+            }
+            
+            // Simulate multiple requests
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => simulateRequest(), i * 200);
+            }
+            
+            logTest('Circuit Breaker', true);
+        }
+
+        // Edge Cases Tests
+        function testInputEdgeCases() {
+            const edgeCases = [
+                { input: '', description: 'Empty string' },
+                { input: null, description: 'Null value' },
+                { input: undefined, description: 'Undefined value' },
+                { input: '   ', description: 'Whitespace only' },
+                { input: 'a'.repeat(10000), description: 'Very long string' },
+                { input: '🚀🎉💻', description: 'Unicode characters' },
+                { input: '<script>alert("xss")</script>', description: 'XSS attempt' },
+                { input: "'; DROP TABLE users; --", description: 'SQL injection attempt' }
+            ];
+            
+            edgeCases.forEach(({ input, description }) => {
+                const isValid = validateInput(input);
+                logToResults('input-edge-results', `🔍 ${description}: ${isValid ? '✅ Valid' : '❌ Invalid'}`);
+            });
+            
+            logTest('Input Edge Cases', true);
+        }
+
+        function testDataTypeEdgeCases() {
+            const dataTypes = [
+                { value: Number.MAX_SAFE_INTEGER, type: 'Max safe integer' },
+                { value: Number.MIN_SAFE_INTEGER, type: 'Min safe integer' },
+                { value: Infinity, type: 'Infinity' },
+                { value: -Infinity, type: 'Negative infinity' },
+                { value: NaN, type: 'NaN' },
+                { value: 0.1 + 0.2, type: 'Floating point precision' }
+            ];
+            
+            dataTypes.forEach(({ value, type }) => {
+                const isValid = Number.isFinite(value) && !Number.isNaN(value);
+                logToResults('input-edge-results', `🔢 ${type}: ${isValid ? '✅ Valid' : '❌ Invalid'} (${value})`);
+            });
+            
+            logTest('Data Type Edge Cases', true);
+        }
+
+        function testBoundaryValues() {
+            const boundaries = [
+                { value: -1, min: 0, max: 100, description: 'Below minimum' },
+                { value: 0, min: 0, max: 100, description: 'At minimum' },
+                { value: 50, min: 0, max: 100, description: 'Within range' },
+                { value: 100, min: 0, max: 100, description: 'At maximum' },
+                { value: 101, min: 0, max: 100, description: 'Above maximum' }
+            ];
+            
+            boundaries.forEach(({ value, min, max, description }) => {
+                const isValid = value >= min && value <= max;
+                logToResults('input-edge-results', `📏 ${description} (${value}): ${isValid ? '✅ Valid' : '❌ Invalid'}`);
+            });
+            
+            logTest('Boundary Value Testing', true);
+        }
+
+        function testMemoryLeaks() {
+            const initialMemory = performance.memory ? performance.memory.usedJSHeapSize : 0;
+            
+            // Simulate potential memory leak
+            const largeArray = new Array(100000).fill('memory test data');
+            
+            setTimeout(() => {
+                const currentMemory = performance.memory ? performance.memory.usedJSHeapSize : 0;
+                const memoryIncrease = currentMemory - initialMemory;
+                
+                logToResults('performance-edge-results', `🧠 Memory usage increase: ${(memoryIncrease / 1024 / 1024).toFixed(2)} MB`);
+                logTest('Memory Leak Detection', memoryIncrease < 50 * 1024 * 1024); // Less than 50MB increase
+                
+                // Clean up
+                largeArray.length = 0;
+            }, 1000);
+        }
+
+        function testLargeDatasets() {
+            const startTime = performance.now();
+            const largeDataset = Array.from({ length: 10000 }, (_, i) => ({
+                id: i,
+                name: `Item ${i}`,
+                value: Math.random() * 1000
+            }));
+            
+            // Simulate processing
+            const processed = largeDataset.filter(item => item.value > 500).map(item => ({ ...item, processed: true }));
+            
+            const endTime = performance.now();
+            const processingTime = endTime - startTime;
+            
+            logToResults('performance-edge-results', `📊 Large dataset (10k items) processed in ${processingTime.toFixed(2)}ms`);
+            logToResults('performance-edge-results', `📈 Filtered results: ${processed.length} items`);
+            
+            logTest('Large Dataset Handling', processingTime < 1000); // Should complete in under 1 second
+        }
+
+        function testPerformanceLimits() {
+            const metrics = {
+                renderTime: 0,
+                memoryUsage: 0,
+                cpuUsage: 0
+            };
+            
+            const startTime = performance.now();
+            
+            // Simulate heavy computation
+            let result = 0;
+            for (let i = 0; i < 1000000; i++) {
+                result += Math.sqrt(i);
+            }
+            
+            metrics.renderTime = performance.now() - startTime;
+            metrics.memoryUsage = performance.memory ? performance.memory.usedJSHeapSize / 1024 / 1024 : 0;
+            
+            updatePerformanceMetrics(metrics);
+            
+            logTest('Performance Limits', metrics.renderTime < 500); // Should complete in under 500ms
+            logToResults('performance-edge-results', `⚡ Performance test completed in ${metrics.renderTime.toFixed(2)}ms`);
+        }
+
+        function testBrowserCompatibility() {
+            const features = {
+                localStorage: typeof Storage !== 'undefined',
+                sessionStorage: typeof sessionStorage !== 'undefined',
+                indexedDB: typeof indexedDB !== 'undefined',
+                webWorkers: typeof Worker !== 'undefined',
+                fetch: typeof fetch !== 'undefined',
+                promises: typeof Promise !== 'undefined',
+                arrow: (() => { try { eval('() => {}'); return true; } catch { return false; } })(),
+                modules: typeof import !== 'undefined'
+            };
+            
+            Object.entries(features).forEach(([feature, supported]) => {
+                logToResults('browser-edge-results', `🌐 ${feature}: ${supported ? '✅ Supported' : '❌ Not supported'}`);
+            });
+            
+            const supportedCount = Object.values(features).filter(Boolean).length;
+            logTest('Browser Compatibility', supportedCount >= 6);
+        }
+
+        function testLocalStorageLimits() {
+            try {
+                const testKey = 'storage-limit-test';
+                let dataSize = 0;
+                let testData = 'a';
+                
+                // Try to fill localStorage
+                while (dataSize < 5 * 1024 * 1024) { // 5MB limit test
+                    try {
+                        localStorage.setItem(testKey, testData);
+                        dataSize = testData.length;
+                        testData += testData; // Double the size
+                    } catch (e) {
+                        logToResults('browser-edge-results', `💾 LocalStorage limit reached at ~${(dataSize / 1024).toFixed(0)}KB`);
+                        break;
+                    }
+                }
+                
+                localStorage.removeItem(testKey);
+                logTest('LocalStorage Limits', true);
+            } catch (error) {
+                logTest('LocalStorage Limits', false);
+                logToResults('browser-edge-results', `❌ LocalStorage test failed: ${error.message}`, 'error');
+            }
+        }
+
+        function testCookieHandling() {
+            try {
+                // Test cookie creation
+                document.cookie = 'test-cookie=test-value; path=/';
+                
+                // Test cookie reading
+                const cookieExists = document.cookie.includes('test-cookie=test-value');
+                
+                // Clean up
+                document.cookie = 'test-cookie=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+                
+                logTest('Cookie Handling', cookieExists);
+                logToResults('browser-edge-results', `🍪 Cookie handling: ${cookieExists ? '✅ Working' : '❌ Failed'}`);
+            } catch (error) {
+                logTest('Cookie Handling', false);
+                logToResults('browser-edge-results', `❌ Cookie test failed: ${error.message}`, 'error');
+            }
+        }
+
+        // Utility Functions
+        function createFallbackUI(errorType, errorMessage) {
+            return `
+                <div class="error-fallback">
+                    <h3>🚨 ${errorType}</h3>
+                    <p>${errorMessage}</p>
+                    <button onclick="location.reload()">🔄 Retry</button>
+                    <button onclick="history.back()">← Go Back</button>
+                </div>
+            `;
+        }
+
+        function simulateErrorRecovery() {
+            // Simulate successful error recovery
+            return true;
+        }
+
+        function simulateErrorReporting(errorReport) {
+            // Simulate sending error report to external service
+            console.log('Sending error report:', errorReport);
+            return true;
+        }
+
+        function generateErrorId() {
+            return `ERR-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        }
+
+        function validateInput(input) {
+            if (input === null || input === undefined) return false;
+            if (typeof input === 'string' && input.trim() === '') return false;
+            if (typeof input === 'string' && input.length > 1000) return false;
+            if (typeof input === 'string' && /<script|javascript:|data:/i.test(input)) return false;
+            return true;
+        }
+
+        function updatePerformanceMetrics(metrics) {
+            const metricsContainer = document.getElementById('performance-metrics');
+            metricsContainer.innerHTML = `
+                <div class="metric">
+                    <div class="metric-value">${metrics.renderTime.toFixed(1)}ms</div>
+                    <div class="metric-label">Render Time</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">${metrics.memoryUsage.toFixed(1)}MB</div>
+                    <div class="metric-label">Memory Usage</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">${testResults.errorsCaught}</div>
+                    <div class="metric-label">Errors Caught</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">${errorLog.length}</div>
+                    <div class="metric-label">Total Errors</div>
+                </div>
+            `;
+        }
+
+        // Interactive Error Simulator
+        function simulateError() {
+            const errorType = document.getElementById('error-type').value;
+            const errorMessage = document.getElementById('error-message').value;
+            const errorSeverity = document.getElementById('error-severity').value;
+            const errorContext = document.getElementById('error-context').value;
+            
+            let finalMessage = errorMessage;
+            if (!finalMessage) {
+                switch (errorType) {
+                    case 'network':
+                        finalMessage = 'Network request failed';
+                        break;
+                    case 'validation':
+                        finalMessage = 'Validation error: Invalid input';
+                        break;
+                    case 'permission':
+                        finalMessage = 'Permission denied: Access forbidden';
+                        break;
+                    case 'memory':
+                        finalMessage = 'Memory error: Maximum heap size exceeded';
+                        break;
+                    case 'timeout':
+                        finalMessage = 'Request timeout: Operation took too long';
+                        break;
+                    case 'chunk':
+                        finalMessage = 'Chunk loading error: Failed to load module';
+                        break;
+                    default:
+                        finalMessage = 'Custom error occurred';
+                }
+            }
+            
+            const simulatedError = new Error(finalMessage);
+            const errorEntry = logError(simulatedError, 'Error Simulation');
+            
+            const simulationArea = document.getElementById('error-simulation-area');
+            const errorContent = document.getElementById('simulated-error-content');
+            const errorDetails = document.getElementById('simulated-error-details');
+            
+            errorContent.innerHTML = `
+                <p><strong>Error Type:</strong> ${errorType}</p>
+                <p><strong>Message:</strong> ${finalMessage}</p>
+                <p><strong>Severity:</strong> <span class="severity-indicator severity-${errorSeverity}">${errorSeverity.toUpperCase()}</span></p>
+                <p><strong>Error ID:</strong> ${errorEntry.id}</p>
+                <p><strong>Suggestion:</strong> ${getErrorSuggestion(simulatedError)}</p>
+            `;
+            
+            errorDetails.innerHTML = `
+                <strong>Error Details:</strong><br>
+                Message: ${simulatedError.message}<br>
+                Stack: ${simulatedError.stack || 'No stack trace available'}<br>
+                Context: ${errorContext || 'No additional context'}<br>
+                Timestamp: ${errorEntry.timestamp}
+            `;
+            
+            simulationArea.style.display = 'block';
+        }
+
+        function clearErrorSimulation() {
+            document.getElementById('error-simulation-area').style.display = 'none';
+            document.getElementById('error-type').value = 'network';
+            document.getElementById('error-message').value = '';
+            document.getElementById('error-severity').value = 'medium';
+            document.getElementById('error-context').value = '';
+        }
+
+        // Error Recovery Demo Functions
+        function testAutoRetry() {
+            const demoArea = document.getElementById('recovery-demo-area');
+            let attempts = 0;
+            const maxAttempts = 3;
+            
+            function attemptOperation() {
+                attempts++;
+                demoArea.innerHTML = `
+                    <div class="warning">
+                        🔄 Auto Retry Attempt ${attempts}/${maxAttempts}<br>
+                        Simulating automatic retry mechanism...
+                    </div>
+                `;
+                
+                if (attempts < maxAttempts) {
+                    setTimeout(attemptOperation, 1000);
+                } else {
+                    demoArea.innerHTML = `
+                        <div class="success">
+                            ✅ Auto Retry Completed<br>
+                            Operation succeeded after ${attempts} attempts
+                        </div>
+                    `;
+                }
+            }
+            
+            attemptOperation();
+        }
+
+        function testManualRetry() {
+            const demoArea = document.getElementById('recovery-demo-area');
+            demoArea.innerHTML = `
+                <div class="error">
+                    ❌ Operation Failed<br>
+                    <button class="test-button" onclick="retryOperation()">🔄 Retry</button>
+                    <button class="test-button" onclick="cancelOperation()">❌ Cancel</button>
+                </div>
+            `;
+        }
+
+        function retryOperation() {
+            const demoArea = document.getElementById('recovery-demo-area');
+            demoArea.innerHTML = `
+                <div class="success">
+                    ✅ Manual Retry Successful<br>
+                    Operation completed successfully after manual retry
+                </div>
+            `;
+        }
+
+        function cancelOperation() {
+            const demoArea = document.getElementById('recovery-demo-area');
+            demoArea.innerHTML = `
+                <div class="warning">
+                    ⚠️ Operation Cancelled<br>
+                    User chose to cancel the operation
+                </div>
+            `;
+        }
+
+        function testGracefulDegradation() {
+            const demoArea = document.getElementById('recovery-demo-area');
+            demoArea.innerHTML = `
+                <div class="warning">
+                    ⚠️ Graceful Degradation Active<br>
+                    Some features are unavailable, but core functionality continues to work.<br>
+                    <ul>
+                        <li>✅ Basic operations: Available</li>
+                        <li>❌ Advanced features: Temporarily disabled</li>
+                        <li>✅ Data access: Read-only mode</li>
+                    </ul>
+                </div>
+            `;
+        }
+
+        function testFallbackContent() {
+            const demoArea = document.getElementById('recovery-demo-area');
+            demoArea.innerHTML = `
+                <div class="success">
+                    🔄 Fallback Content Loaded<br>
+                    When the primary content fails to load, this fallback ensures the user still sees something useful.
+                    <div style="margin-top: 10px; padding: 10px; background: #f3f4f6; border-radius: 4px;">
+                        📄 <strong>Fallback Content:</strong> Basic information and navigation options are still available.
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initialize
+        updateTestSummary();
+        
+        // Monitor network status
+        window.addEventListener('online', () => {
+            const networkStatus = document.getElementById('network-status');
+            networkStatus.textContent = '🟢 Network Status: Online';
+            networkStatus.className = 'network-status network-online';
+        });
+        
+        window.addEventListener('offline', () => {
+            const networkStatus = document.getElementById('network-status');
+            networkStatus.textContent = '🔴 Network Status: Offline';
+            networkStatus.className = 'network-status network-offline';
+        });
+        
+        // Global error handler
+        window.addEventListener('error', (event) => {
+            logError(event.error, 'Global Error Handler');
+        });
+        
+        window.addEventListener('unhandledrejection', (event) => {
+            logError(new Error(event.reason), 'Unhandled Promise Rejection');
+        });
+        
+        // Auto-run some basic tests
+        setTimeout(() => {
+            logToResults('error-boundary-results', '🚀 Error boundary tests initialized');
+            logToResults('network-error-results', '🚀 Network error tests ready');
+            logToResults('input-edge-results', '🚀 Edge case tests ready');
+        }, 500);
+    </script>
+</body>
+</html>

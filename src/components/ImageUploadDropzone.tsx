@@ -1,5 +1,5 @@
 import React, { useState, useRef, useCallback, useEffect } from 'react';
-import { useTheme } from '../App';
+import { useTheme } from '../contexts/ThemeContext';
 import { Upload, X, Image as ImageIcon, AlertCircle, Loader2 } from 'lucide-react';
 
 interface UploadedImage {

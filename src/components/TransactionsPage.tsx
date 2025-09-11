@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { useTheme, useWarehouse } from '../App';
+import { useTheme } from '../contexts/ThemeContext';
+import { useWarehouse } from '../App';
 import Sidebar from './Sidebar';
 import TopNav from './TopNav';
-import { Filter, Download, Calendar, User, Package, ArrowUp, ArrowDown, RotateCcw, Building } from 'lucide-react';
+import { Filter, Download, Calendar, User, Package, ArrowUp, ArrowDown, RotateCcw, Building, ChevronDown } from 'lucide-react';
 
 interface TransactionsPageProps {
   onLogout: () => void;
@@ -339,79 +340,137 @@ const TransactionsPage: React.FC<TransactionsPageProps> = ({ onLogout, onPageCha
                 </div>
               </div>
 
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className={`${isDark ? 'bg-gray-700' : 'bg-gray-50'}`}>
-                    <tr>
-                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
-                        Transaction ID
-                      </th>
-                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
-                        Type
-                      </th>
-                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
-                        Item Name
-                      </th>
-                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
-                        Quantity
-                      </th>
-                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
-                        Date & Time
-                      </th>
-                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
-                        User
-                      </th>
-                      <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider ${isDark ? 'text-gray-300' : 'text-gray-500'}`}>
-                        Reference
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody className={`${isDark ? 'bg-gray-800' : 'bg-white'} divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-200'}`}>
-                    {filteredTransactions.map((transaction) => (
-                      <tr key={transaction.id} className={`transition-colors ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                           <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.id}</div>
-                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getTypeColor(transaction.type)}`}>
-                              {getTypeIcon(transaction.type)}
-                              <span className="ml-1">{transaction.type}</span>
-                            </span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                           <div>
-                             <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.itemName}</div>
-                             {transaction.supplier && (
-                               <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{transaction.supplier}</div>
-                             )}
-                           </div>
-                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className={`text-sm font-semibold ${getQuantityColor(transaction.type, transaction.quantity)}`}>
-                            {formatQuantity(transaction.type, transaction.quantity)}
-                          </div>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                           <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.date}</div>
-                           <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{transaction.time}</div>
-                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                           <div className="flex items-center">
-                             <div className={`${isDark ? 'bg-blue-900' : 'bg-blue-50'} p-1 rounded-full mr-2`}>
-                               <User className={`h-3 w-3 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
-                             </div>
-                             <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.user}</div>
-                           </div>
-                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                           <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.reference}</div>
-                         </td>
+              {/* Enhanced Scrollable Table Container */}
+              <div className="relative">
+                {/* Scroll Indicators */}
+                <div className={`absolute left-0 top-0 bottom-0 w-8 bg-gradient-to-r ${isDark ? 'from-gray-800 to-transparent' : 'from-white to-transparent'} pointer-events-none z-10 opacity-0 transition-opacity duration-300`} id="scroll-indicator-left-transactions"></div>
+                <div className={`absolute right-0 top-0 bottom-0 w-8 bg-gradient-to-l ${isDark ? 'from-gray-800 to-transparent' : 'from-white to-transparent'} pointer-events-none z-10 opacity-100 transition-opacity duration-300`} id="scroll-indicator-right-transactions"></div>
+                
+                {/* Scrollable Table Container */}
+                <div 
+                  className="overflow-x-auto smooth-scroll scrollbar-thin scrollbar-thumb-gray-400 scrollbar-track-gray-200 dark:scrollbar-thumb-gray-600 dark:scrollbar-track-gray-800"
+                  style={{
+                    scrollbarWidth: 'thin',
+                    scrollbarColor: isDark ? '#4B5563 #1F2937' : '#9CA3AF #E5E7EB'
+                  }}
+                  onScroll={(e) => {
+                    const target = e.target as HTMLDivElement;
+                    const leftIndicator = document.getElementById('scroll-indicator-left-transactions');
+                    const rightIndicator = document.getElementById('scroll-indicator-right-transactions');
+                    
+                    if (leftIndicator && rightIndicator) {
+                      const isAtStart = target.scrollLeft <= 10;
+                      const isAtEnd = target.scrollLeft >= target.scrollWidth - target.clientWidth - 10;
+                      
+                      leftIndicator.style.opacity = isAtStart ? '0' : '1';
+                      rightIndicator.style.opacity = isAtEnd ? '0' : '1';
+                    }
+                  }}
+                >
+                  <table className="w-full" style={{ minWidth: '900px' }}>
+                    <thead className={`${isDark ? 'bg-gray-700' : 'bg-gray-50'} sticky top-0 z-5`}>
+                      <tr>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap ${isDark ? 'text-gray-300' : 'text-gray-500'}`} style={{ minWidth: '140px' }}>
+                          Transaction ID
+                        </th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap ${isDark ? 'text-gray-300' : 'text-gray-500'}`} style={{ minWidth: '120px' }}>
+                          Type
+                        </th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap ${isDark ? 'text-gray-300' : 'text-gray-500'}`} style={{ minWidth: '200px' }}>
+                          Item Name
+                        </th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap ${isDark ? 'text-gray-300' : 'text-gray-500'}`} style={{ minWidth: '100px' }}>
+                          Quantity
+                        </th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap ${isDark ? 'text-gray-300' : 'text-gray-500'}`} style={{ minWidth: '140px' }}>
+                          Date & Time
+                        </th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap ${isDark ? 'text-gray-300' : 'text-gray-500'}`} style={{ minWidth: '120px' }}>
+                          User
+                        </th>
+                        <th className={`px-6 py-3 text-left text-xs font-medium uppercase tracking-wider whitespace-nowrap ${isDark ? 'text-gray-300' : 'text-gray-500'}`} style={{ minWidth: '120px' }}>
+                          Reference
+                        </th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody className={`${isDark ? 'bg-gray-800' : 'bg-white'} divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-200'}`}>
+                      {filteredTransactions.map((transaction) => (
+                        <tr key={transaction.id} className={`transition-colors ${isDark ? 'hover:bg-gray-700' : 'hover:bg-gray-50'}`}>
+                          <td className="px-6 py-4 whitespace-nowrap" style={{ minWidth: '140px' }}>
+                             <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.id}</div>
+                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap" style={{ minWidth: '120px' }}>
+                            <div className="flex items-center">
+                              <span className={`inline-flex items-center px-2 py-1 text-xs font-medium rounded-full ${getTypeColor(transaction.type)}`}>
+                                {getTypeIcon(transaction.type)}
+                                <span className="ml-1">{transaction.type}</span>
+                              </span>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4" style={{ minWidth: '200px' }}>
+                             <div>
+                               <div className={`text-sm font-medium ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.itemName}</div>
+                               {transaction.supplier && (
+                                 <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{transaction.supplier}</div>
+                               )}
+                             </div>
+                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap" style={{ minWidth: '100px' }}>
+                            <div className={`text-sm font-semibold ${getQuantityColor(transaction.type, transaction.quantity)}`}>
+                              {formatQuantity(transaction.type, transaction.quantity)}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap" style={{ minWidth: '140px' }}>
+                             <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.date}</div>
+                             <div className={`text-sm ${isDark ? 'text-gray-400' : 'text-gray-500'}`}>{transaction.time}</div>
+                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap" style={{ minWidth: '120px' }}>
+                             <div className="flex items-center">
+                               <div className={`${isDark ? 'bg-blue-900' : 'bg-blue-50'} p-1 rounded-full mr-2`}>
+                                 <User className={`h-3 w-3 ${isDark ? 'text-blue-400' : 'text-blue-600'}`} />
+                               </div>
+                               <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.user}</div>
+                             </div>
+                           </td>
+                          <td className="px-6 py-4 whitespace-nowrap" style={{ minWidth: '120px' }}>
+                             <div className={`text-sm ${isDark ? 'text-white' : 'text-gray-900'}`}>{transaction.reference}</div>
+                           </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+                
+                {/* Navigation Controls */}
+                <div className="absolute top-1/2 -translate-y-1/2 left-2 z-20">
+                  <button 
+                    className={`p-2 rounded-full shadow-lg transition-all duration-200 ${isDark ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-white hover:bg-gray-50 text-gray-700'} border ${isDark ? 'border-gray-600' : 'border-gray-200'}`}
+                    onClick={() => {
+                      const container = document.querySelector('.overflow-x-auto') as HTMLDivElement;
+                      if (container) {
+                        container.scrollBy({ left: -200, behavior: 'smooth' });
+                      }
+                    }}
+                    title="Scroll Left"
+                  >
+                    <ChevronDown className="h-4 w-4 rotate-90" />
+                  </button>
+                </div>
+                
+                <div className="absolute top-1/2 -translate-y-1/2 right-2 z-20">
+                  <button 
+                    className={`p-2 rounded-full shadow-lg transition-all duration-200 ${isDark ? 'bg-gray-700 hover:bg-gray-600 text-white' : 'bg-white hover:bg-gray-50 text-gray-700'} border ${isDark ? 'border-gray-600' : 'border-gray-200'}`}
+                    onClick={() => {
+                      const container = document.querySelector('.overflow-x-auto') as HTMLDivElement;
+                      if (container) {
+                        container.scrollBy({ left: 200, behavior: 'smooth' });
+                      }
+                    }}
+                    title="Scroll Right"
+                  >
+                    <ChevronDown className="h-4 w-4 -rotate-90" />
+                  </button>
+                </div>
               </div>
             </div>
           </div>

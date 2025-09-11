@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTheme } from '../App';
+import { useTheme } from '../contexts/ThemeContext';
 import { 
   LayoutDashboard, 
   Package, 
@@ -7,6 +7,7 @@ import {
   Receipt, 
   Settings,
   Truck,
+  BarChart3,
   X,
   ChevronRight
 } from 'lucide-react';
@@ -18,7 +19,7 @@ interface SidebarProps {
   onPageChange: (page: string) => void;
 }
 
-const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, currentPage, onPageChange }) => {
+const Sidebar: React.FC<SidebarProps> = React.memo(({ isOpen, onClose, currentPage, onPageChange }) => {
   const { isDark } = useTheme();
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', key: 'dashboard' },
@@ -26,6 +27,7 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, currentPage, onPageC
     { icon: ArrowRightLeft, label: 'Transactions', key: 'transactions' },
     { icon: Receipt, label: 'Receipts', key: 'receipts' },
     { icon: Truck, label: 'Movements', key: 'movements' },
+    { icon: BarChart3, label: 'Analytics', key: 'analytics' },
     { icon: Settings, label: 'Settings', key: 'settings' },
   ];
 
@@ -123,6 +125,6 @@ const Sidebar: React.FC<SidebarProps> = ({ isOpen, onClose, currentPage, onPageC
       </div>
     </>
   );
-};
+});
 
 export default Sidebar;

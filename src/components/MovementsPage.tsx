@@ -1,7 +1,11 @@
-import React, { useState, useEffect } from 'react';
-import { useTheme, useWarehouse } from '../App';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import { useTheme } from '../contexts/ThemeContext';
+import { useWarehouse } from '../App';
+import { useInventory, useMovements } from '../hooks/useInventory';
 import Sidebar from './Sidebar';
 import TopNav from './TopNav';
+import SkeletonLoader from './SkeletonLoader';
+import TableSkeleton from './TableSkeleton';
 import { 
   Search, 
   Plus, 
@@ -88,6 +92,9 @@ interface ContainerContents {
 const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange }) => {
   const { isDark } = useTheme();
   const { currentWarehouse, warehouseData } = useWarehouse();
+  const { containerContents, isLoading, isSubmitting, setLoading, setSubmitting, updateContainerContents, addContainerContents } = useInventory();
+  const { movements, addMovement, updateMovement, deleteMovement, filterMovements } = useMovements();
+  
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState<string>('all');
@@ -97,8 +104,6 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
   const [showContainerModal, setShowContainerModal] = useState(false);
   const [selectedMovement, setSelectedMovement] = useState<Movement | null>(null);
   const [selectedContainer, setSelectedContainer] = useState<string>('');
-  const [movements, setMovements] = useState<Movement[]>([]);
-  const [containerContents, setContainerContents] = useState<ContainerContents[]>([]);
   const [newMovement, setNewMovement] = useState({
     type: 'Arrival' as 'Arrival' | 'Departure',
     transportType: 'Container' as 'Container' | 'Truck',
@@ -133,124 +138,28 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
     barcode: ''
   });
 
-  // Load data from localStorage on component mount
-  useEffect(() => {
-    const savedMovements = localStorage.getItem('movements');
-    const savedContainerContents = localStorage.getItem('containerContents');
-    
-    if (savedMovements) {
-      setMovements(JSON.parse(savedMovements));
-    } else {
-      // Initialize with sample data
-      const sampleMovements: Movement[] = [
-        {
-          id: 'MOV-001',
-          type: 'Arrival',
-          transportType: 'Container',
-          truckPlate: 'LB-123-456',
-          containerId: 'CONT-001',
-          containerInfo: {
-            containerId: 'CONT-001',
-            sealNumber: 'SEAL-12345',
-            size: '40ft',
-            type: 'Standard'
-          },
-          driverName: 'Ahmad Khalil',
-          driverPhone: '+961-70-123456',
-          driverEmail: 'ahmad.khalil@transport.lb',
-          timestamp: '2024-01-15 10:30 AM',
-          status: 'Completed',
-          origin: 'Beirut Port',
-          destination: 'Warehouse A',
-          notes: 'Cargo inspection completed',
-          isLocked: true,
-          arrivalTime: '2024-01-15 10:30 AM'
-        },
-        {
-          id: 'MOV-002',
-          type: 'Departure',
-          transportType: 'Truck',
-          truckPlate: 'LB-789-012',
-          truckInfo: {
-            plateNumber: 'LB-789-012',
-            trailerInfo: 'Semi-trailer',
-            capacity: '25 tons'
-          },
-          driverName: 'Fatima Mansour',
-          driverPhone: '+961-71-789012',
-          timestamp: '2024-01-15 2:15 PM',
-          status: 'Completed',
-          origin: 'Warehouse B',
-          destination: 'Tripoli Port',
-          isLocked: false,
-          departureTime: '2024-01-15 2:15 PM'
-        },
-        {
-          id: 'MOV-003',
-          type: 'Arrival',
-          transportType: 'Container',
-          truckPlate: 'LB-345-678',
-          containerId: 'CONT-003',
-          containerInfo: {
-            containerId: 'CONT-003',
-            sealNumber: 'SEAL-67890',
-            size: '20ft',
-            type: 'Refrigerated'
-          },
-          driverName: 'Omar Saad',
-          driverPhone: '+961-76-345678',
-          timestamp: '2024-01-14 4:45 PM',
-          status: 'Pending',
-          origin: 'Sidon Port',
-          destination: 'Warehouse C',
-          notes: 'Awaiting customs clearance',
-          isLocked: false
-        }
-      ];
-      setMovements(sampleMovements);
-      localStorage.setItem('movements', JSON.stringify(sampleMovements));
-    }
-    
-    if (savedContainerContents) {
-      setContainerContents(JSON.parse(savedContainerContents));
-    } else {
-      // Initialize with sample container contents
-      const sampleContents: ContainerContents[] = [
-        {
-          containerId: 'CONT-001',
-          products: [
-            {
-              id: 'PROD-001',
-              name: 'Electronics Components',
-              type: 'Electronics',
-              quantity: 50,
-              unit: 'boxes',
-              condition: 'Good',
-              value: 25000,
-              description: 'Various electronic components for manufacturing'
-            }
-          ],
-          isLocked: true,
-          lastUpdated: '2024-01-15 10:30 AM',
-          totalValue: 25000,
-          totalItems: 50
-        }
-      ];
-      setContainerContents(sampleContents);
-      localStorage.setItem('containerContents', JSON.stringify(sampleContents));
-    }
-  }, []);
-  
-  // Save to localStorage whenever data changes
-  useEffect(() => {
-    localStorage.setItem('movements', JSON.stringify(movements));
-  }, [movements]);
+  // Initialize data on component mount
+  const { initializeData } = useInventory();
   
   useEffect(() => {
-    localStorage.setItem('containerContents', JSON.stringify(containerContents));
-  }, [containerContents]);
+    const loadData = async () => {
+      setLoading(true);
+      
+      // Simulate loading delay for better UX demonstration
+      await new Promise(resolve => setTimeout(resolve, 800));
+      
+      // Initialize data if store is empty
+      if (movements.length === 0) {
+        initializeData();
+      }
+      
+      setLoading(false);
+    };
+    
+    loadData();
+  }, [initializeData, movements.length, setLoading]);
 
-  const getStatusColor = (status: string) => {
+  const getStatusColor = useCallback((status: string) => {
     switch (status) {
       case 'Completed':
         return 'bg-green-100 text-green-800';
@@ -261,9 +170,9 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
       default:
         return 'bg-gray-100 text-gray-800';
     }
-  };
+  }, []);
 
-  const getTypeIcon = (type: string) => {
+  const getTypeIcon = useCallback((type: string) => {
     switch (type) {
       case 'Arrival':
         return <ArrowDownCircle className="h-4 w-4 text-green-600" />;
@@ -272,9 +181,9 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
       default:
         return <Package className="h-4 w-4 text-gray-600" />;
     }
-  };
+  }, []);
 
-  const getTransportTypeIcon = (transportType: string) => {
+  const getTransportTypeIcon = useCallback((transportType: string) => {
     switch (transportType) {
       case 'Container':
         return <Container className="h-5 w-5 text-blue-600" />;
@@ -283,9 +192,9 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
       default:
         return <Package className="h-5 w-5 text-gray-600" />;
     }
-  };
+  }, []);
 
-  const getTransportTypeColor = (transportType: string) => {
+  const getTransportTypeColor = useCallback((transportType: string) => {
     switch (transportType) {
       case 'Container':
         return 'bg-blue-100 text-blue-800 border-blue-200';
@@ -294,7 +203,7 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
       default:
         return 'bg-gray-100 text-gray-800 border-gray-200';
     }
-  };
+  }, []);
 
   const generateMovementId = () => {
     const timestamp = Date.now();
@@ -339,45 +248,39 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
   };
 
   const toggleContainerLock = (containerId: string) => {
-    setContainerContents(prev => 
-      prev.map(cc => 
-        cc.containerId === containerId 
-          ? { ...cc, isLocked: !cc.isLocked, lastUpdated: new Date().toLocaleString() }
-          : cc
-      )
-    );
-    setMovements(prev => 
-      prev.map(m => 
-        m.containerId === containerId 
-          ? { ...m, isLocked: !m.isLocked }
-          : m
-      )
-    );
+    const container = getContainerContents(containerId);
+    if (container) {
+      updateContainerContents(containerId, {
+        isLocked: !container.isLocked,
+        lastUpdated: new Date().toLocaleString()
+      });
+    }
+    
+    // Update all movements with this container
+    movements.forEach(movement => {
+      if (movement.containerId === containerId) {
+        updateMovement(movement.id, { isLocked: !movement.isLocked });
+      }
+    });
   };
 
-  const filteredMovements = movements.filter(movement => {
-    const searchLower = searchTerm.toLowerCase();
-    const matchesSearch = movement.id.toLowerCase().includes(searchLower) ||
-                         movement.driverName.toLowerCase().includes(searchLower) ||
-                         (movement.truckPlate && movement.truckPlate.toLowerCase().includes(searchLower)) ||
-                         (movement.containerId && movement.containerId.toLowerCase().includes(searchLower)) ||
-                         (movement.truckInfo?.plateNumber && movement.truckInfo.plateNumber.toLowerCase().includes(searchLower)) ||
-                         (movement.containerInfo?.containerId && movement.containerInfo.containerId.toLowerCase().includes(searchLower)) ||
-                         movement.transportType.toLowerCase().includes(searchLower);
-    
-    const matchesFilter = filterType === 'all' || 
-                         movement.type === filterType || 
-                         movement.transportType === filterType;
-    
-    return matchesSearch && matchesFilter;
-  });
+  const filteredMovements = useMemo(() => {
+    return filterMovements({
+      searchTerm,
+      type: filterType === 'all' || filterType === 'Container' || filterType === 'Truck' ? undefined : filterType,
+      transportType: filterType === 'Container' || filterType === 'Truck' ? filterType : undefined
+    });
+  }, [filterMovements, searchTerm, filterType]);
 
-  const handleLogMovement = () => {
-    const errors = validateMovement(newMovement);
-    if (errors.length > 0) {
-      alert('Please fix the following errors:\n' + errors.join('\n'));
-      return;
-    }
+  const handleLogMovement = useCallback(async () => {
+    setSubmitting(true);
+    
+    try {
+      const errors = validateMovement(newMovement);
+      if (errors.length > 0) {
+        alert('Please fix the following errors:\n' + errors.join('\n'));
+        return;
+      }
 
     // Check for duplicate container/truck based on transport type
     if (newMovement.transportType === 'Container' && newMovement.containerInfo?.containerId) {
@@ -387,8 +290,7 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
       }
     }
 
-    const movement: Movement = {
-      id: generateMovementId(),
+    const movementData = {
       type: newMovement.type as 'Arrival' | 'Departure',
       transportType: newMovement.transportType,
       truckPlate: newMovement.transportType === 'Truck' ? newMovement.truckInfo?.plateNumber || '' : '',
@@ -398,8 +300,7 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
       driverName: newMovement.driverName!,
       driverPhone: newMovement.driverPhone,
       driverEmail: newMovement.driverEmail,
-      timestamp: new Date().toLocaleString(),
-      status: 'In Progress',
+      status: 'In Progress' as const,
       origin: newMovement.origin,
       destination: newMovement.destination,
       notes: newMovement.notes,
@@ -408,7 +309,7 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
       departureTime: newMovement.type === 'Departure' ? new Date().toLocaleString() : undefined
     };
 
-    setMovements(prev => [movement, ...prev]);
+    const movement = addMovement(movementData);
     
     // Initialize container contents if it's a container arrival
     if (movement.type === 'Arrival' && movement.transportType === 'Container' && movement.containerId) {
@@ -422,7 +323,7 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
           totalValue: 0,
           totalItems: 0
         };
-        setContainerContents(prev => [...prev, newContainer]);
+        addContainerContents(newContainer);
       }
     }
 
@@ -451,11 +352,20 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
       notes: ''
     });
     
-    setShowLogModal(false);
-    alert('Movement logged successfully!');
-  };
+      // Simulate API call delay
+      await new Promise(resolve => setTimeout(resolve, 1000));
+      
+      setShowLogModal(false);
+      alert('Movement logged successfully!');
+    } catch (error) {
+      console.error('Error logging movement:', error);
+      alert('Failed to log movement. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  }, [newMovement, movements, addMovement, addContainerContents, getContainerContents, setSubmitting]);
 
-  const handleAddProduct = () => {
+  const handleAddProduct = useCallback(() => {
     if (!selectedContainer) {
       alert('Please select a container first.');
       return;
@@ -478,21 +388,16 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
       barcode: newProduct.barcode
     };
 
-    setContainerContents(prev => 
-      prev.map(cc => {
-        if (cc.containerId === selectedContainer) {
-          const updatedProducts = [...cc.products, product];
-          return {
-            ...cc,
-            products: updatedProducts,
-            totalItems: updatedProducts.reduce((sum, p) => sum + p.quantity, 0),
-            totalValue: updatedProducts.reduce((sum, p) => sum + (p.value || 0), 0),
-            lastUpdated: new Date().toLocaleString()
-          };
-        }
-        return cc;
-      })
-    );
+    const container = getContainerContents(selectedContainer);
+    if (container) {
+      const updatedProducts = [...container.products, product];
+      updateContainerContents(selectedContainer, {
+        products: updatedProducts,
+        totalItems: updatedProducts.reduce((sum, p) => sum + p.quantity, 0),
+        totalValue: updatedProducts.reduce((sum, p) => sum + (p.value || 0), 0),
+        lastUpdated: new Date().toLocaleString()
+      });
+    }
 
     // Reset form
     setNewProduct({
@@ -508,16 +413,16 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
     
     setShowProductModal(false);
     alert('Product added successfully!');
-  };
+  }, [selectedContainer, newProduct, getContainerContents, updateContainerContents]);
 
-  const handleDeleteMovement = (movementId: string) => {
+  const handleDeleteMovement = useCallback((movementId: string) => {
     if (confirm('Are you sure you want to delete this movement?')) {
-      setMovements(prev => prev.filter(m => m.id !== movementId));
+      deleteMovement(movementId);
       alert('Movement deleted successfully!');
     }
-  };
+  }, [deleteMovement]);
 
-  const exportManifest = (containerId: string) => {
+  const exportManifest = useCallback((containerId: string) => {
     const container = getContainerContents(containerId);
     if (!container) {
       alert('No container contents found.');
@@ -540,25 +445,27 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
     link.download = `manifest-${containerId}-${Date.now()}.json`;
     link.click();
     URL.revokeObjectURL(url);
-  };
+  }, [containerContents]);
 
-  const handleViewDetails = (movement: Movement) => {
+  const handleViewDetails = useCallback((movement: Movement) => {
     setSelectedMovement(movement);
     setShowDetailModal(true);
-  };
+  }, [setSelectedMovement, setShowDetailModal]);
 
   return (
     <div className={`flex h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <Sidebar 
         isOpen={sidebarOpen} 
-        onToggle={() => setSidebarOpen(!sidebarOpen)}
+        onClose={() => setSidebarOpen(false)}
+        currentPage="movements"
         onPageChange={onPageChange}
       />
       
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopNav 
+          onMenuClick={() => setSidebarOpen(!sidebarOpen)}
+          onLogout={onLogout}
           onPageChange={onPageChange}
-          onToggle={() => setSidebarOpen(!sidebarOpen)}
         />
         
         <main className={`flex-1 overflow-x-hidden overflow-y-auto p-6 ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
@@ -587,7 +494,22 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
           </div>
 
           {/* Controls */}
-          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-4 mb-6`}>
+          {isLoading ? (
+            <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-4 mb-6`}>
+              <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
+                <div className="flex flex-col sm:flex-row gap-4 flex-1">
+                  <SkeletonLoader width="200px" height="40px" />
+                  <SkeletonLoader width="150px" height="40px" />
+                </div>
+                <div className="flex gap-2">
+                  <SkeletonLoader width="120px" height="40px" />
+                  <SkeletonLoader width="140px" height="40px" />
+                  <SkeletonLoader width="130px" height="40px" />
+                </div>
+              </div>
+            </div>
+          ) : (
+            <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow p-4 mb-6`}>
             <div className="flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
               <div className="flex flex-col sm:flex-row gap-4 flex-1">
                 {/* Search */}
@@ -661,9 +583,13 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
               </div>
             </div>
           </div>
+          )}
 
           {/* Movements Table */}
-          <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow overflow-hidden`}>
+          {isLoading ? (
+            <TableSkeleton rows={8} columns={9} showHeader={true} />
+          ) : (
+            <div className={`${isDark ? 'bg-gray-800' : 'bg-white'} rounded-lg shadow overflow-hidden`}>
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y ${isDark ? 'divide-gray-700' : 'divide-gray-200'}">
                 <thead className={isDark ? 'bg-gray-700' : 'bg-gray-50'}>
@@ -855,6 +781,7 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
               </table>
             </div>
           </div>
+          )}
 
           {/* Log Movement Modal */}
           {showLogModal && (
@@ -1247,9 +1174,21 @@ const MovementsPage: React.FC<MovementsPageProps> = ({ onLogout, onPageChange })
                   </button>
                   <button
                     onClick={handleLogMovement}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg transition-colors"
+                    disabled={isSubmitting}
+                    className={`flex-1 px-4 py-2 rounded-lg transition-colors flex items-center justify-center gap-2 ${
+                      isSubmitting
+                        ? 'bg-blue-400 cursor-not-allowed'
+                        : 'bg-blue-600 hover:bg-blue-700'
+                    } text-white`}
                   >
-                    Save Movement
+                    {isSubmitting ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                        Saving...
+                      </>
+                    ) : (
+                      'Save Movement'
+                    )}
                   </button>
                 </div>
               </div>

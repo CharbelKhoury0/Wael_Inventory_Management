@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { useTheme, useWarehouse } from '../App';
+import { useTheme } from '../contexts/ThemeContext';
+import { useWarehouse } from '../App';
 import Sidebar from './Sidebar';
 import TopNav from './TopNav';
 import { FileText, Building, Calendar, DollarSign, Eye, Download, X, Package, Truck, Container } from 'lucide-react';
@@ -210,6 +211,49 @@ const ReceiptsPage: React.FC<ReceiptsPageProps> = ({ onLogout, onPageChange }) =
     setShowDetailsModal(true);
   };
 
+  const handleDownloadReceipt = (receipt: Receipt) => {
+    // Generate PDF content
+    const pdfContent = `
+RECEIPT DOCUMENT
+================
+
+Receipt ID: ${receipt.id}
+Supplier: ${receipt.supplierName}
+Type: ${receipt.type}
+Date: ${receipt.date}
+Status: ${receipt.status}
+PO Number: ${receipt.poNumber || 'N/A'}
+Total Amount: ${receipt.totalAmount}
+
+ITEMS:
+------
+${receipt.items.map(item => 
+  `${item.name} - Qty: ${item.quantity} - Unit Price: ${item.unitPrice} - Total: ${item.total}`
+).join('\n')}
+
+Notes: ${receipt.notes || 'No notes'}
+
+Generated on: ${new Date().toLocaleString()}
+    `;
+    
+    // Create and download file
+    const blob = new Blob([pdfContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `receipt-${receipt.id}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  const handleDownloadPDF = () => {
+    if (selectedReceipt) {
+      handleDownloadReceipt(selectedReceipt);
+    }
+  };
+
   return (
     <div className={`flex h-screen ${isDark ? 'bg-gray-900' : 'bg-gray-50'}`}>
       <Sidebar 
@@ -351,7 +395,11 @@ const ReceiptsPage: React.FC<ReceiptsPageProps> = ({ onLogout, onPageChange }) =
                             >
                               <Eye className="h-4 w-4" />
                             </button>
-                            <button className="text-gray-400 hover:text-gray-600 transition-colors">
+                            <button 
+                              onClick={() => handleDownloadReceipt(receipt)}
+                              className="text-gray-400 hover:text-gray-600 transition-colors"
+                              title="Download Receipt"
+                            >
                               <Download className="h-4 w-4" />
                             </button>
                           </div>
@@ -523,7 +571,10 @@ const ReceiptsPage: React.FC<ReceiptsPageProps> = ({ onLogout, onPageChange }) =
 
               {/* Actions */}
               <div className="flex gap-3 pt-4">
-                <button className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors">
+                <button 
+                  onClick={handleDownloadPDF}
+                  className="flex-1 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                >
                   <Download className="h-4 w-4 mr-2 inline" />
                   Download PDF
                 </button>

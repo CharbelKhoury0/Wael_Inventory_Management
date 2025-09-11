@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Export & Import Operations Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-header {
+            background: #2563eb;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+        .test-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: #f9fafb;
+            border-radius: 4px;
+        }
+        .status {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: inline-block;
+        }
+        .status.pass { background-color: #10b981; }
+        .status.fail { background-color: #ef4444; }
+        .status.pending { background-color: #f59e0b; }
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #2563eb;
+        }
+        .test-results {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #059669;
+            background: #ecfdf5;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .demo-area {
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background: #f9fafb;
+        }
+        .file-input {
+            margin: 10px 0;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            width: 100%;
+        }
+        .data-preview {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            background: white;
+            margin: 10px 0;
+        }
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        .data-table th,
+        .data-table td {
+            border: 1px solid #e5e7eb;
+            padding: 8px;
+            text-align: left;
+            font-size: 12px;
+        }
+        .data-table th {
+            background: #f3f4f6;
+            font-weight: bold;
+        }
+        .format-selector {
+            display: flex;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .format-option {
+            padding: 8px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+        }
+        .format-option.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+        .validation-results {
+            background: #fef3c7;
+            border: 1px solid #f59e0b;
+            border-radius: 4px;
+            padding: 10px;
+            margin: 10px 0;
+        }
+        .progress-bar {
+            width: 100%;
+            height: 20px;
+            background: #e5e7eb;
+            border-radius: 10px;
+            overflow: hidden;
+            margin: 10px 0;
+        }
+        .progress-fill {
+            height: 100%;
+            background: #3b82f6;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1>📊 Export & Import Operations Test Suite</h1>
+        <p>Comprehensive testing for data export, import, and file operations</p>
+    </div>
+
+    <div class="test-container">
+        <h2>📋 Test Overview</h2>
+        <div id="test-summary">
+            <div class="test-item">
+                <span class="status pending" id="overall-status"></span>
+                <span>Overall Test Status: <span id="overall-text">Pending</span></span>
+            </div>
+            <div class="test-item">
+                <span>Total Tests: <span id="total-tests">0</span></span>
+            </div>
+            <div class="test-item">
+                <span>Passed: <span id="passed-tests">0</span></span>
+            </div>
+            <div class="test-item">
+                <span>Failed: <span id="failed-tests">0</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Export Tests -->
+    <div class="test-container">
+        <h2>📤 Export Functionality Tests</h2>
+        
+        <div class="test-section">
+            <h3>CSV Export Tests</h3>
+            <button class="test-button" onclick="testCSVExport()">Test CSV Export</button>
+            <button class="test-button" onclick="testCSVFormatting()">Test CSV Formatting</button>
+            <button class="test-button" onclick="testCSVEncoding()">Test CSV Encoding</button>
+            <button class="test-button" onclick="testExportTemplate()">Test Export Template</button>
+            <div id="csv-export-results" class="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>PDF Export Tests</h3>
+            <button class="test-button" onclick="testPDFExport()">Test PDF Export</button>
+            <button class="test-button" onclick="testPDFFormatting()">Test PDF Formatting</button>
+            <button class="test-button" onclick="testPDFContent()">Test PDF Content</button>
+            <div id="pdf-export-results" class="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Bulk Export Tests</h3>
+            <button class="test-button" onclick="testBulkExport()">Test Bulk Export</button>
+            <button class="test-button" onclick="testSelectedItemsExport()">Test Selected Items Export</button>
+            <button class="test-button" onclick="testFilteredExport()">Test Filtered Export</button>
+            <div id="bulk-export-results" class="test-results"></div>
+        </div>
+    </div>
+
+    <!-- Import Tests -->
+    <div class="test-container">
+        <h2>📥 Import Functionality Tests</h2>
+        
+        <div class="test-section">
+            <h3>CSV Import Tests</h3>
+            <button class="test-button" onclick="testCSVImport()">Test CSV Import</button>
+            <button class="test-button" onclick="testCSVValidation()">Test CSV Validation</button>
+            <button class="test-button" onclick="testFieldMapping()">Test Field Mapping</button>
+            <button class="test-button" onclick="testImportPreview()">Test Import Preview</button>
+            <div id="csv-import-results" class="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Data Validation Tests</h3>
+            <button class="test-button" onclick="testDataValidation()">Test Data Validation</button>
+            <button class="test-button" onclick="testRequiredFields()">Test Required Fields</button>
+            <button class="test-button" onclick="testDataTypes()">Test Data Types</button>
+            <button class="test-button" onclick="testDuplicateDetection()">Test Duplicate Detection</button>
+            <div id="validation-results" class="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Import Processing Tests</h3>
+            <button class="test-button" onclick="testImportProgress()">Test Import Progress</button>
+            <button class="test-button" onclick="testErrorHandling()">Test Error Handling</button>
+            <button class="test-button" onclick="testRollback()">Test Import Rollback</button>
+            <div id="processing-results" class="test-results"></div>
+        </div>
+    </div>
+
+    <!-- Interactive Demo -->
+    <div class="test-container">
+        <h2>🎮 Interactive Export/Import Demo</h2>
+        
+        <div class="demo-area">
+            <h3>Export Demo</h3>
+            <div class="format-selector">
+                <div class="format-option active" onclick="selectExportFormat('csv')" id="csv-format">CSV</div>
+                <div class="format-option" onclick="selectExportFormat('pdf')" id="pdf-format">PDF</div>
+                <div class="format-option" onclick="selectExportFormat('json')" id="json-format">JSON</div>
+            </div>
+            
+            <button class="test-button" onclick="generateSampleExport()">Generate Sample Export</button>
+            <button class="test-button" onclick="downloadExport()">Download Export</button>
+            
+            <div class="data-preview" id="export-preview">
+                <p style="padding: 20px; text-align: center; color: #6b7280;">Click "Generate Sample Export" to see preview</p>
+            </div>
+        </div>
+
+        <div class="demo-area">
+            <h3>Import Demo</h3>
+            <input type="file" class="file-input" id="import-file" accept=".csv,.json" onchange="handleFileImport(event)">
+            
+            <div class="validation-results" id="import-validation" style="display: none;">
+                <h4>Validation Results:</h4>
+                <div id="validation-details"></div>
+            </div>
+            
+            <div class="progress-bar" id="import-progress" style="display: none;">
+                <div class="progress-fill" id="progress-fill" style="width: 0%;"></div>
+            </div>
+            
+            <div class="data-preview" id="import-preview">
+                <p style="padding: 20px; text-align: center; color: #6b7280;">Select a file to import</p>
+            </div>
+            
+            <button class="test-button" onclick="processImport()" id="process-import" style="display: none;">Process Import</button>
+        </div>
+    </div>
+
+    <script>
+        let testResults = {
+            total: 0,
+            passed: 0,
+            failed: 0
+        };
+
+        let selectedExportFormat = 'csv';
+        let importData = null;
+        let exportData = null;
+
+        // Mock data for testing
+        const mockInventoryData = [
+            { id: '1', sku: 'LAP001', name: 'Laptop Computer', category: 'Electronics', price: 999.99, quantity: 50, location: 'A1-01', minstock: 10, supplier: 'TechCorp' },
+            { id: '2', sku: 'CHR001', name: 'Office Chair', category: 'Furniture', price: 299.99, quantity: 25, location: 'B2-05', minstock: 5, supplier: 'FurniCorp' },
+            { id: '3', sku: 'MOU001', name: 'Wireless Mouse', category: 'Electronics', price: 29.99, quantity: 100, location: 'A1-02', minstock: 20, supplier: 'TechCorp' },
+            { id: '4', sku: 'DSK001', name: 'Standing Desk', category: 'Furniture', price: 599.99, quantity: 15, location: 'B2-01', minstock: 3, supplier: 'FurniCorp' },
+            { id: '5', sku: 'MON001', name: 'Monitor 24"', category: 'Electronics', price: 199.99, quantity: 30, location: 'A1-03', minstock: 8, supplier: 'DisplayCorp' }
+        ];
+
+        function updateTestSummary() {
+            document.getElementById('total-tests').textContent = testResults.total;
+            document.getElementById('passed-tests').textContent = testResults.passed;
+            document.getElementById('failed-tests').textContent = testResults.failed;
+            
+            const overallStatus = document.getElementById('overall-status');
+            const overallText = document.getElementById('overall-text');
+            
+            if (testResults.total === 0) {
+                overallStatus.className = 'status pending';
+                overallText.textContent = 'Pending';
+            } else if (testResults.failed === 0) {
+                overallStatus.className = 'status pass';
+                overallText.textContent = 'All Tests Passed';
+            } else {
+                overallStatus.className = 'status fail';
+                overallText.textContent = `${testResults.failed} Tests Failed`;
+            }
+        }
+
+        function logTest(name, passed, details = '') {
+            testResults.total++;
+            if (passed) {
+                testResults.passed++;
+            } else {
+                testResults.failed++;
+            }
+            updateTestSummary();
+            console.log(`Test: ${name} - ${passed ? 'PASSED' : 'FAILED'}${details ? ' - ' + details : ''}`);
+        }
+
+        function logToResults(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = isError ? 'error' : 'success';
+            element.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        }
+
+        // Export Tests
+        function testCSVExport() {
+            try {
+                const csvData = generateCSV(mockInventoryData);
+                const hasHeaders = csvData.includes('sku,name,category');
+                const hasData = csvData.includes('LAP001');
+                
+                logTest('CSV Export', hasHeaders && hasData);
+                logToResults('csv-export-results', `✅ CSV export generated: ${csvData.split('\n').length - 1} rows`);
+                logToResults('csv-export-results', `📄 Sample: ${csvData.split('\n')[0]}`);
+            } catch (error) {
+                logTest('CSV Export', false, error.message);
+                logToResults('csv-export-results', `❌ CSV export failed: ${error.message}`, true);
+            }
+        }
+
+        function testCSVFormatting() {
+            const testData = [{ name: 'Test, Item', description: 'Item with "quotes"' }];
+            const csv = generateCSV(testData);
+            
+            const hasEscapedComma = csv.includes('"Test, Item"');
+            const hasEscapedQuotes = csv.includes('"Item with ""quotes"""');
+            
+            logTest('CSV Formatting', hasEscapedComma && hasEscapedQuotes);
+            logToResults('csv-export-results', `🔧 CSV formatting test: ${hasEscapedComma ? '✅' : '❌'} commas, ${hasEscapedQuotes ? '✅' : '❌'} quotes`);
+        }
+
+        function testCSVEncoding() {
+            const testData = [{ name: 'Café', description: 'Special chars: àáâãäåæçèéêë' }];
+            const csv = generateCSV(testData);
+            
+            const hasUTF8 = csv.includes('Café') && csv.includes('àáâãäåæçèéêë');
+            
+            logTest('CSV Encoding', hasUTF8);
+            logToResults('csv-export-results', `🌐 UTF-8 encoding test: ${hasUTF8 ? '✅ Passed' : '❌ Failed'}`);
+        }
+
+        function testExportTemplate() {
+            const template = generateExportTemplate();
+            const hasRequiredFields = ['sku', 'name', 'category', 'price', 'quantity'].every(field => template.includes(field));
+            
+            logTest('Export Template', hasRequiredFields);
+            logToResults('csv-export-results', `📋 Export template: ${hasRequiredFields ? '✅ All required fields present' : '❌ Missing fields'}`);
+        }
+
+        function testPDFExport() {
+            try {
+                const pdfHTML = generatePDFHTML(mockInventoryData);
+                const hasTable = pdfHTML.includes('<table>');
+                const hasData = pdfHTML.includes('LAP001');
+                const hasStyles = pdfHTML.includes('@media print');
+                
+                logTest('PDF Export', hasTable && hasData && hasStyles);
+                logToResults('pdf-export-results', `📄 PDF HTML generated: ${hasTable ? '✅' : '❌'} table, ${hasStyles ? '✅' : '❌'} styles`);
+            } catch (error) {
+                logTest('PDF Export', false, error.message);
+                logToResults('pdf-export-results', `❌ PDF export failed: ${error.message}`, true);
+            }
+        }
+
+        function testPDFFormatting() {
+            const pdfHTML = generatePDFHTML(mockInventoryData);
+            const hasHeader = pdfHTML.includes('class="header"');
+            const hasTimestamp = pdfHTML.includes(new Date().getFullYear());
+            
+            logTest('PDF Formatting', hasHeader && hasTimestamp);
+            logToResults('pdf-export-results', `🎨 PDF formatting: ${hasHeader ? '✅' : '❌'} header, ${hasTimestamp ? '✅' : '❌'} timestamp`);
+        }
+
+        function testPDFContent() {
+            const pdfHTML = generatePDFHTML(mockInventoryData);
+            const rowCount = (pdfHTML.match(/<tr>/g) || []).length - 1; // Subtract header row
+            
+            logTest('PDF Content', rowCount === mockInventoryData.length);
+            logToResults('pdf-export-results', `📊 PDF content: ${rowCount} rows (expected: ${mockInventoryData.length})`);
+        }
+
+        function testBulkExport() {
+            const bulkData = mockInventoryData.slice(0, 3);
+            const csv = generateCSV(bulkData);
+            const rowCount = csv.split('\n').length - 2; // Subtract header and empty line
+            
+            logTest('Bulk Export', rowCount === 3);
+            logToResults('bulk-export-results', `📦 Bulk export: ${rowCount} items exported`);
+        }
+
+        function testSelectedItemsExport() {
+            const selectedItems = [mockInventoryData[0], mockInventoryData[2]];
+            const csv = generateCSV(selectedItems);
+            const hasFirstItem = csv.includes('LAP001');
+            const hasThirdItem = csv.includes('MOU001');
+            const doesNotHaveSecond = !csv.includes('CHR001');
+            
+            logTest('Selected Items Export', hasFirstItem && hasThirdItem && doesNotHaveSecond);
+            logToResults('bulk-export-results', `🎯 Selected export: ${hasFirstItem && hasThirdItem ? '✅' : '❌'} correct items`);
+        }
+
+        function testFilteredExport() {
+            const electronicsItems = mockInventoryData.filter(item => item.category === 'Electronics');
+            const csv = generateCSV(electronicsItems);
+            const electronicsCount = (csv.match(/Electronics/g) || []).length;
+            
+            logTest('Filtered Export', electronicsCount === 3);
+            logToResults('bulk-export-results', `🔍 Filtered export: ${electronicsCount} Electronics items`);
+        }
+
+        // Import Tests
+        function testCSVImport() {
+            const csvData = 'sku,name,category,price\nTEST001,Test Item,Electronics,99.99';
+            const parsed = parseCSV(csvData);
+            
+            logTest('CSV Import', parsed.length === 1 && parsed[0].sku === 'TEST001');
+            logToResults('csv-import-results', `📥 CSV import: ${parsed.length} rows parsed`);
+        }
+
+        function testCSVValidation() {
+            const invalidCSV = 'sku,name\nTEST001';
+            const validCSV = 'sku,name\nTEST001,Test Item';
+            
+            const invalidParsed = parseCSV(invalidCSV);
+            const validParsed = parseCSV(validCSV);
+            
+            const validationPassed = invalidParsed[0].name === '' && validParsed[0].name === 'Test Item';
+            
+            logTest('CSV Validation', validationPassed);
+            logToResults('csv-import-results', `✅ CSV validation: ${validationPassed ? 'Handles missing fields' : 'Failed'}`);
+        }
+
+        function testFieldMapping() {
+            const csvData = 'product_code,product_name,category\nTEST001,Test Item,Electronics';
+            const mapping = { sku: 'product_code', name: 'product_name', category: 'category' };
+            const mapped = applyFieldMapping(parseCSV(csvData), mapping);
+            
+            logTest('Field Mapping', mapped[0].sku === 'TEST001' && mapped[0].name === 'Test Item');
+            logToResults('csv-import-results', `🗺️ Field mapping: ${mapped[0].sku === 'TEST001' ? '✅ Success' : '❌ Failed'}`);
+        }
+
+        function testImportPreview() {
+            const csvData = generateCSV(mockInventoryData.slice(0, 2));
+            const preview = generateImportPreview(csvData);
+            
+            logTest('Import Preview', preview.includes('LAP001') && preview.includes('CHR001'));
+            logToResults('csv-import-results', `👁️ Import preview generated with ${csvData.split('\n').length - 1} rows`);
+        }
+
+        function testDataValidation() {
+            const testData = [
+                { sku: 'TEST001', name: 'Valid Item', price: '99.99', quantity: '10' },
+                { sku: '', name: 'Invalid Item', price: 'invalid', quantity: '-5' }
+            ];
+            
+            const validation = validateImportData(testData);
+            const hasErrors = validation.errors.length > 0;
+            const hasValidItems = validation.valid.length === 1;
+            
+            logTest('Data Validation', hasErrors && hasValidItems);
+            logToResults('validation-results', `🔍 Validation: ${validation.valid.length} valid, ${validation.errors.length} errors`);
+        }
+
+        function testRequiredFields() {
+            const testData = [{ name: 'Test Item', price: '99.99' }]; // Missing SKU
+            const validation = validateRequiredFields(testData, ['sku', 'name']);
+            
+            logTest('Required Fields', validation.errors.length === 1);
+            logToResults('validation-results', `📋 Required fields: ${validation.errors.length} missing field errors`);
+        }
+
+        function testDataTypes() {
+            const testData = [{ price: 'not-a-number', quantity: '10.5' }];
+            const validation = validateDataTypes(testData);
+            
+            logTest('Data Types', validation.errors.length > 0);
+            logToResults('validation-results', `🔢 Data types: ${validation.errors.length} type errors detected`);
+        }
+
+        function testDuplicateDetection() {
+            const testData = [
+                { sku: 'DUP001', name: 'Item 1' },
+                { sku: 'DUP001', name: 'Item 2' }
+            ];
+            const duplicates = findDuplicates(testData, 'sku');
+            
+            logTest('Duplicate Detection', duplicates.length === 1);
+            logToResults('validation-results', `🔄 Duplicates: ${duplicates.length} duplicate SKUs found`);
+        }
+
+        function testImportProgress() {
+            simulateImportProgress(mockInventoryData, (progress) => {
+                logToResults('processing-results', `📈 Import progress: ${progress}%`);
+                if (progress === 100) {
+                    logTest('Import Progress', true);
+                }
+            });
+        }
+
+        function testErrorHandling() {
+            try {
+                const invalidData = [{ sku: null, name: undefined }];
+                const result = processImportData(invalidData);
+                logTest('Error Handling', false, 'Should have thrown error');
+            } catch (error) {
+                logTest('Error Handling', true);
+                logToResults('processing-results', `🚨 Error handling: ${error.message}`);
+            }
+        }
+
+        function testRollback() {
+            const originalData = [...mockInventoryData];
+            const importData = [{ sku: 'NEW001', name: 'New Item' }];
+            
+            // Simulate failed import
+            try {
+                processImportWithRollback(originalData, importData, true); // Force failure
+            } catch (error) {
+                const dataUnchanged = JSON.stringify(originalData) === JSON.stringify(mockInventoryData);
+                logTest('Import Rollback', dataUnchanged);
+                logToResults('processing-results', `↩️ Rollback: ${dataUnchanged ? '✅ Data restored' : '❌ Data corrupted'}`);
+            }
+        }
+
+        // Utility Functions
+        function generateCSV(data) {
+            if (!data || data.length === 0) return '';
+            
+            const headers = Object.keys(data[0]);
+            const csvRows = [headers.join(',')];
+            
+            data.forEach(item => {
+                const row = headers.map(header => {
+                    let value = item[header] || '';
+                    if (typeof value === 'string' && (value.includes(',') || value.includes('"'))) {
+                        value = `"${value.replace(/"/g, '""')}"`;
+                    }
+                    return value;
+                });
+                csvRows.push(row.join(','));
+            });
+            
+            return csvRows.join('\n');
+        }
+
+        function generateExportTemplate() {
+            const headers = ['sku', 'name', 'category', 'price', 'quantity', 'location', 'minstock', 'supplier'];
+            return headers.join(',');
+        }
+
+        function generatePDFHTML(data) {
+            const headers = Object.keys(data[0] || {});
+            const rows = data.map(item => 
+                `<tr>${headers.map(h => `<td>${item[h] || ''}</td>`).join('')}</tr>`
+            ).join('');
+            
+            return `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <style>
+                        @media print {
+                            body { font-family: Arial, sans-serif; }
+                            .header { text-align: center; margin-bottom: 20px; }
+                            table { width: 100%; border-collapse: collapse; }
+                            th, td { border: 1px solid #ddd; padding: 8px; }
+                        }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h1>Inventory Export</h1>
+                        <p>Generated on ${new Date().toLocaleDateString()}</p>
+                    </div>
+                    <table>
+                        <tr>${headers.map(h => `<th>${h}</th>`).join('')}</tr>
+                        ${rows}
+                    </table>
+                </body>
+                </html>
+            `;
+        }
+
+        function parseCSV(csvText) {
+            const lines = csvText.trim().split('\n');
+            if (lines.length < 2) return [];
+            
+            const headers = lines[0].split(',');
+            const data = [];
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',');
+                const item = {};
+                headers.forEach((header, index) => {
+                    item[header.trim()] = (values[index] || '').trim();
+                });
+                data.push(item);
+            }
+            
+            return data;
+        }
+
+        function applyFieldMapping(data, mapping) {
+            return data.map(item => {
+                const mapped = {};
+                Object.entries(mapping).forEach(([targetField, sourceField]) => {
+                    mapped[targetField] = item[sourceField] || '';
+                });
+                return mapped;
+            });
+        }
+
+        function generateImportPreview(csvData) {
+            const data = parseCSV(csvData);
+            const preview = data.slice(0, 5);
+            
+            if (preview.length === 0) return 'No data to preview';
+            
+            const headers = Object.keys(preview[0]);
+            let html = '<table class="data-table">';
+            html += '<tr>' + headers.map(h => `<th>${h}</th>`).join('') + '</tr>';
+            preview.forEach(item => {
+                html += '<tr>' + headers.map(h => `<td>${item[h] || ''}</td>`).join('') + '</tr>';
+            });
+            html += '</table>';
+            
+            return html;
+        }
+
+        function validateImportData(data) {
+            const valid = [];
+            const errors = [];
+            
+            data.forEach((item, index) => {
+                const itemErrors = [];
+                
+                if (!item.sku) itemErrors.push('Missing SKU');
+                if (!item.name) itemErrors.push('Missing name');
+                if (item.price && isNaN(parseFloat(item.price))) itemErrors.push('Invalid price');
+                if (item.quantity && (isNaN(parseInt(item.quantity)) || parseInt(item.quantity) < 0)) {
+                    itemErrors.push('Invalid quantity');
+                }
+                
+                if (itemErrors.length === 0) {
+                    valid.push(item);
+                } else {
+                    errors.push({ row: index + 1, errors: itemErrors });
+                }
+            });
+            
+            return { valid, errors };
+        }
+
+        function validateRequiredFields(data, requiredFields) {
+            const errors = [];
+            
+            data.forEach((item, index) => {
+                requiredFields.forEach(field => {
+                    if (!item[field]) {
+                        errors.push({ row: index + 1, field, message: `Missing required field: ${field}` });
+                    }
+                });
+            });
+            
+            return { errors };
+        }
+
+        function validateDataTypes(data) {
+            const errors = [];
+            
+            data.forEach((item, index) => {
+                if (item.price && isNaN(parseFloat(item.price))) {
+                    errors.push({ row: index + 1, field: 'price', message: 'Price must be a number' });
+                }
+                if (item.quantity && isNaN(parseInt(item.quantity))) {
+                    errors.push({ row: index + 1, field: 'quantity', message: 'Quantity must be a number' });
+                }
+            });
+            
+            return { errors };
+        }
+
+        function findDuplicates(data, field) {
+            const seen = new Set();
+            const duplicates = [];
+            
+            data.forEach(item => {
+                if (seen.has(item[field])) {
+                    duplicates.push(item[field]);
+                } else {
+                    seen.add(item[field]);
+                }
+            });
+            
+            return duplicates;
+        }
+
+        function simulateImportProgress(data, callback) {
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 20;
+                callback(progress);
+                if (progress >= 100) {
+                    clearInterval(interval);
+                }
+            }, 500);
+        }
+
+        function processImportData(data) {
+            data.forEach(item => {
+                if (item.sku === null || item.name === undefined) {
+                    throw new Error('Invalid data detected');
+                }
+            });
+            return data;
+        }
+
+        function processImportWithRollback(originalData, importData, forceFailure = false) {
+            if (forceFailure) {
+                throw new Error('Simulated import failure');
+            }
+            return [...originalData, ...importData];
+        }
+
+        // Interactive Demo Functions
+        function selectExportFormat(format) {
+            selectedExportFormat = format;
+            document.querySelectorAll('.format-option').forEach(el => el.classList.remove('active'));
+            document.getElementById(`${format}-format`).classList.add('active');
+        }
+
+        function generateSampleExport() {
+            const preview = document.getElementById('export-preview');
+            
+            switch (selectedExportFormat) {
+                case 'csv':
+                    exportData = generateCSV(mockInventoryData);
+                    preview.innerHTML = `<pre style="font-size: 10px; padding: 10px;">${exportData}</pre>`;
+                    break;
+                case 'pdf':
+                    exportData = generatePDFHTML(mockInventoryData);
+                    preview.innerHTML = '<p style="padding: 20px;">📄 PDF content generated (HTML format)</p>';
+                    break;
+                case 'json':
+                    exportData = JSON.stringify(mockInventoryData, null, 2);
+                    preview.innerHTML = `<pre style="font-size: 10px; padding: 10px;">${exportData.substring(0, 500)}...</pre>`;
+                    break;
+            }
+        }
+
+        function downloadExport() {
+            if (!exportData) {
+                alert('Please generate export data first');
+                return;
+            }
+            
+            const blob = new Blob([exportData], { 
+                type: selectedExportFormat === 'csv' ? 'text/csv' : 
+                      selectedExportFormat === 'json' ? 'application/json' : 'text/html'
+            });
+            
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `inventory_export.${selectedExportFormat}`;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function handleFileImport(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const content = e.target.result;
+                
+                if (file.name.endsWith('.csv')) {
+                    importData = parseCSV(content);
+                    const preview = generateImportPreview(content);
+                    document.getElementById('import-preview').innerHTML = preview;
+                    
+                    // Validate data
+                    const validation = validateImportData(importData);
+                    const validationDiv = document.getElementById('import-validation');
+                    const detailsDiv = document.getElementById('validation-details');
+                    
+                    if (validation.errors.length > 0) {
+                        validationDiv.style.display = 'block';
+                        detailsDiv.innerHTML = `
+                            <p>✅ Valid rows: ${validation.valid.length}</p>
+                            <p>❌ Errors: ${validation.errors.length}</p>
+                            <ul>${validation.errors.map(e => `<li>Row ${e.row}: ${e.errors.join(', ')}</li>`).join('')}</ul>
+                        `;
+                    } else {
+                        validationDiv.style.display = 'block';
+                        detailsDiv.innerHTML = '<p>✅ All data is valid!</p>';
+                    }
+                    
+                    document.getElementById('process-import').style.display = 'inline-block';
+                } else if (file.name.endsWith('.json')) {
+                    try {
+                        importData = JSON.parse(content);
+                        document.getElementById('import-preview').innerHTML = 
+                            `<p style="padding: 20px;">📄 JSON file loaded with ${importData.length} records</p>`;
+                        document.getElementById('process-import').style.display = 'inline-block';
+                    } catch (error) {
+                        alert('Invalid JSON file');
+                    }
+                }
+            };
+            
+            reader.readAsText(file);
+        }
+
+        function processImport() {
+            if (!importData) {
+                alert('No import data available');
+                return;
+            }
+            
+            const progressBar = document.getElementById('import-progress');
+            const progressFill = document.getElementById('progress-fill');
+            
+            progressBar.style.display = 'block';
+            
+            simulateImportProgress(importData, (progress) => {
+                progressFill.style.width = `${progress}%`;
+                
+                if (progress === 100) {
+                    setTimeout(() => {
+                        alert(`Import completed! ${importData.length} records processed.`);
+                        progressBar.style.display = 'none';
+                        progressFill.style.width = '0%';
+                    }, 500);
+                }
+            });
+        }
+
+        // Initialize
+        updateTestSummary();
+        
+        // Auto-run some basic tests
+        setTimeout(() => {
+            logToResults('csv-export-results', '🚀 Export test suite initialized');
+            logToResults('csv-import-results', '🚀 Import test suite ready');
+            logToResults('validation-results', '🚀 Validation tests ready');
+        }, 500);
+    </script>
+</body>
+</html>

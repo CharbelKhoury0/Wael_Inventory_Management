@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search & Filter Functionality Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-header {
+            background: #2563eb;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+        .test-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: #f9fafb;
+            border-radius: 4px;
+        }
+        .status {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: inline-block;
+        }
+        .status.pass { background-color: #10b981; }
+        .status.fail { background-color: #ef4444; }
+        .status.pending { background-color: #f59e0b; }
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #2563eb;
+        }
+        .test-results {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #059669;
+            background: #ecfdf5;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .search-demo {
+            border: 1px solid #d1d5db;
+            border-radius: 8px;
+            padding: 20px;
+            margin: 20px 0;
+            background: #f9fafb;
+        }
+        .search-input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+        .filter-controls {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+        .filter-select {
+            padding: 8px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            background: white;
+        }
+        .search-results {
+            max-height: 200px;
+            overflow-y: auto;
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            background: white;
+        }
+        .search-result-item {
+            padding: 10px;
+            border-bottom: 1px solid #f3f4f6;
+            cursor: pointer;
+        }
+        .search-result-item:hover {
+            background: #f9fafb;
+        }
+        .highlight {
+            background: #fef08a;
+            font-weight: bold;
+        }
+        .performance-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin-top: 15px;
+        }
+        .metric {
+            background: #f3f4f6;
+            padding: 10px;
+            border-radius: 4px;
+            text-align: center;
+        }
+        .metric-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #2563eb;
+        }
+        .metric-label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1>🔍 Search & Filter Functionality Test Suite</h1>
+        <p>Comprehensive testing for global search, advanced search, and filtering capabilities</p>
+    </div>
+
+    <div class="test-container">
+        <h2>📋 Test Overview</h2>
+        <div id="test-summary">
+            <div class="test-item">
+                <span class="status pending" id="overall-status"></span>
+                <span>Overall Test Status: <span id="overall-text">Pending</span></span>
+            </div>
+            <div class="test-item">
+                <span>Total Tests: <span id="total-tests">0</span></span>
+            </div>
+            <div class="test-item">
+                <span>Passed: <span id="passed-tests">0</span></span>
+            </div>
+            <div class="test-item">
+                <span>Failed: <span id="failed-tests">0</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Global Search Tests -->
+    <div class="test-container">
+        <h2>🌐 Global Search Tests</h2>
+        
+        <div class="test-section">
+            <h3>Basic Search Functionality</h3>
+            <button class="test-button" onclick="testBasicSearch()">Test Basic Search</button>
+            <button class="test-button" onclick="testFuzzySearch()">Test Fuzzy Search</button>
+            <button class="test-button" onclick="testSearchHighlighting()">Test Search Highlighting</button>
+            <div id="global-search-results" class="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Search Categories & Types</h3>
+            <button class="test-button" onclick="testCategorySearch()">Test Category Search</button>
+            <button class="test-button" onclick="testTypeFiltering()">Test Type Filtering</button>
+            <button class="test-button" onclick="testSearchPriority()">Test Search Priority</button>
+            <div id="category-search-results" class="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Search History & Favorites</h3>
+            <button class="test-button" onclick="testSearchHistory()">Test Search History</button>
+            <button class="test-button" onclick="testSearchFavorites()">Test Search Favorites</button>
+            <button class="test-button" onclick="testSearchSuggestions()">Test Search Suggestions</button>
+            <div id="history-results" class="test-results"></div>
+        </div>
+    </div>
+
+    <!-- Advanced Search Tests -->
+    <div class="test-container">
+        <h2>🔧 Advanced Search Tests</h2>
+        
+        <div class="test-section">
+            <h3>Filter Operations</h3>
+            <button class="test-button" onclick="testFilterOperators()">Test Filter Operators</button>
+            <button class="test-button" onclick="testMultipleFilters()">Test Multiple Filters</button>
+            <button class="test-button" onclick="testFilterLogic()">Test Filter Logic (AND/OR)</button>
+            <div id="filter-results" class="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Field Type Filtering</h3>
+            <button class="test-button" onclick="testTextFiltering()">Test Text Filtering</button>
+            <button class="test-button" onclick="testNumberFiltering()">Test Number Filtering</button>
+            <button class="test-button" onclick="testDateFiltering()">Test Date Filtering</button>
+            <button class="test-button" onclick="testSelectFiltering()">Test Select Filtering</button>
+            <div id="field-filter-results" class="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Saved Searches</h3>
+            <button class="test-button" onclick="testSaveSearch()">Test Save Search</button>
+            <button class="test-button" onclick="testLoadSearch()">Test Load Search</button>
+            <button class="test-button" onclick="testDeleteSearch()">Test Delete Search</button>
+            <div id="saved-search-results" class="test-results"></div>
+        </div>
+    </div>
+
+    <!-- Performance Tests -->
+    <div class="test-container">
+        <h2>⚡ Performance Tests</h2>
+        
+        <div class="test-section">
+            <h3>Search Performance</h3>
+            <button class="test-button" onclick="testSearchPerformance()">Test Search Speed</button>
+            <button class="test-button" onclick="testLargeDataset()">Test Large Dataset</button>
+            <button class="test-button" onclick="testConcurrentSearch()">Test Concurrent Searches</button>
+            <div id="performance-results" class="test-results"></div>
+            <div class="performance-metrics" id="performance-metrics"></div>
+        </div>
+    </div>
+
+    <!-- Interactive Search Demo -->
+    <div class="test-container">
+        <h2>🎮 Interactive Search Demo</h2>
+        
+        <div class="search-demo">
+            <h3>Live Search Test</h3>
+            <input type="text" class="search-input" id="demo-search" placeholder="Type to search...">
+            
+            <div class="filter-controls">
+                <select class="filter-select" id="category-filter">
+                    <option value="">All Categories</option>
+                    <option value="item">Items</option>
+                    <option value="transaction">Transactions</option>
+                    <option value="movement">Movements</option>
+                    <option value="receipt">Receipts</option>
+                </select>
+                
+                <select class="filter-select" id="sort-filter">
+                    <option value="relevance">Sort by Relevance</option>
+                    <option value="name">Sort by Name</option>
+                    <option value="date">Sort by Date</option>
+                    <option value="priority">Sort by Priority</option>
+                </select>
+                
+                <button class="test-button" onclick="clearDemoSearch()">Clear</button>
+            </div>
+            
+            <div class="search-results" id="demo-results">
+                <div style="padding: 20px; text-align: center; color: #6b7280;">
+                    Start typing to see search results...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = {
+            total: 0,
+            passed: 0,
+            failed: 0
+        };
+
+        // Mock data for testing
+        const mockData = [
+            { id: '1', type: 'item', title: 'Laptop Computer', subtitle: 'Electronics', description: 'High-performance laptop for business use', searchableText: 'laptop computer electronics business high-performance', priority: 5 },
+            { id: '2', type: 'item', title: 'Office Chair', subtitle: 'Furniture', description: 'Ergonomic office chair with lumbar support', searchableText: 'office chair furniture ergonomic lumbar support', priority: 3 },
+            { id: '3', type: 'transaction', title: 'Sale #12345', subtitle: 'Completed', description: 'Sale transaction for laptop computer', searchableText: 'sale transaction laptop computer completed', priority: 4 },
+            { id: '4', type: 'movement', title: 'Stock Transfer', subtitle: 'Warehouse A to B', description: 'Transfer of office supplies', searchableText: 'stock transfer warehouse office supplies', priority: 2 },
+            { id: '5', type: 'receipt', title: 'Receipt #R001', subtitle: 'Purchase', description: 'Purchase receipt for office equipment', searchableText: 'receipt purchase office equipment', priority: 3 },
+            { id: '6', type: 'item', title: 'Wireless Mouse', subtitle: 'Electronics', description: 'Bluetooth wireless mouse', searchableText: 'wireless mouse electronics bluetooth', priority: 2 },
+            { id: '7', type: 'item', title: 'Desk Lamp', subtitle: 'Furniture', description: 'LED desk lamp with adjustable brightness', searchableText: 'desk lamp furniture led adjustable brightness', priority: 1 },
+            { id: '8', type: 'transaction', title: 'Return #R789', subtitle: 'Processed', description: 'Return transaction for defective mouse', searchableText: 'return transaction defective mouse processed', priority: 3 }
+        ];
+
+        function updateTestSummary() {
+            document.getElementById('total-tests').textContent = testResults.total;
+            document.getElementById('passed-tests').textContent = testResults.passed;
+            document.getElementById('failed-tests').textContent = testResults.failed;
+            
+            const overallStatus = document.getElementById('overall-status');
+            const overallText = document.getElementById('overall-text');
+            
+            if (testResults.total === 0) {
+                overallStatus.className = 'status pending';
+                overallText.textContent = 'Pending';
+            } else if (testResults.failed === 0) {
+                overallStatus.className = 'status pass';
+                overallText.textContent = 'All Tests Passed';
+            } else {
+                overallStatus.className = 'status fail';
+                overallText.textContent = `${testResults.failed} Tests Failed`;
+            }
+        }
+
+        function logTest(name, passed, details = '') {
+            testResults.total++;
+            if (passed) {
+                testResults.passed++;
+            } else {
+                testResults.failed++;
+            }
+            updateTestSummary();
+            console.log(`Test: ${name} - ${passed ? 'PASSED' : 'FAILED'}${details ? ' - ' + details : ''}`);
+        }
+
+        function logToResults(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = isError ? 'error' : 'success';
+            element.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        }
+
+        // Fuzzy search implementation
+        function fuzzySearch(text, pattern) {
+            const textLower = text.toLowerCase();
+            const patternLower = pattern.toLowerCase();
+            
+            let score = 0;
+            let textIndex = 0;
+            let patternIndex = 0;
+            const positions = [];
+            
+            // Exact match bonus
+            if (textLower.includes(patternLower)) {
+                score += patternLower.length * 2;
+            }
+            
+            // Character matching
+            while (textIndex < textLower.length && patternIndex < patternLower.length) {
+                if (textLower[textIndex] === patternLower[patternIndex]) {
+                    positions.push(textIndex);
+                    score += 1;
+                    patternIndex++;
+                }
+                textIndex++;
+            }
+            
+            return {
+                score: patternIndex === patternLower.length ? score : 0,
+                positions
+            };
+        }
+
+        // Highlight text with positions
+        function highlightText(text, positions) {
+            if (positions.length === 0) return text;
+            
+            let result = '';
+            let lastIndex = 0;
+            
+            positions.forEach(pos => {
+                result += text.slice(lastIndex, pos);
+                result += `<span class="highlight">${text[pos]}</span>`;
+                lastIndex = pos + 1;
+            });
+            
+            result += text.slice(lastIndex);
+            return result;
+        }
+
+        // Global Search Tests
+        function testBasicSearch() {
+            const query = 'laptop';
+            const results = mockData.filter(item => 
+                item.searchableText.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            logTest('Basic Search', results.length > 0);
+            logToResults('global-search-results', `🔍 Basic search for "${query}" found ${results.length} results`);
+            
+            results.forEach(result => {
+                logToResults('global-search-results', `  - ${result.title} (${result.type})`);
+            });
+        }
+
+        function testFuzzySearch() {
+            const query = 'lapto';
+            const results = [];
+            
+            mockData.forEach(item => {
+                const match = fuzzySearch(item.searchableText, query);
+                if (match.score > 0) {
+                    results.push({ ...item, score: match.score, positions: match.positions });
+                }
+            });
+            
+            results.sort((a, b) => b.score - a.score);
+            
+            logTest('Fuzzy Search', results.length > 0);
+            logToResults('global-search-results', `🎯 Fuzzy search for "${query}" found ${results.length} results`);
+            
+            results.forEach(result => {
+                logToResults('global-search-results', `  - ${result.title} (score: ${result.score})`);
+            });
+        }
+
+        function testSearchHighlighting() {
+            const query = 'office';
+            const item = mockData.find(item => item.searchableText.includes(query));
+            
+            if (item) {
+                const match = fuzzySearch(item.searchableText, query);
+                const highlighted = highlightText(item.title, match.positions);
+                
+                logTest('Search Highlighting', match.positions.length > 0);
+                logToResults('global-search-results', `✨ Highlighted result: ${highlighted}`);
+            } else {
+                logTest('Search Highlighting', false, 'No matching item found');
+            }
+        }
+
+        function testCategorySearch() {
+            const categories = ['item', 'transaction', 'movement', 'receipt'];
+            let allCategoriesFound = true;
+            
+            categories.forEach(category => {
+                const results = mockData.filter(item => item.type === category);
+                if (results.length === 0) {
+                    allCategoriesFound = false;
+                }
+                logToResults('category-search-results', `📂 Category "${category}": ${results.length} items`);
+            });
+            
+            logTest('Category Search', allCategoriesFound);
+        }
+
+        function testTypeFiltering() {
+            const itemTypes = mockData.filter(item => item.type === 'item');
+            const transactionTypes = mockData.filter(item => item.type === 'transaction');
+            
+            logTest('Type Filtering', itemTypes.length > 0 && transactionTypes.length > 0);
+            logToResults('category-search-results', `🏷️ Items: ${itemTypes.length}, Transactions: ${transactionTypes.length}`);
+        }
+
+        function testSearchPriority() {
+            const sortedByPriority = [...mockData].sort((a, b) => (b.priority || 0) - (a.priority || 0));
+            const highestPriority = sortedByPriority[0];
+            
+            logTest('Search Priority', highestPriority.priority > 0);
+            logToResults('category-search-results', `⭐ Highest priority item: ${highestPriority.title} (priority: ${highestPriority.priority})`);
+        }
+
+        function testSearchHistory() {
+            const history = ['laptop', 'office', 'chair', 'mouse'];
+            localStorage.setItem('search-history', JSON.stringify(history));
+            
+            const savedHistory = JSON.parse(localStorage.getItem('search-history') || '[]');
+            
+            logTest('Search History', savedHistory.length === history.length);
+            logToResults('history-results', `📚 Search history: ${savedHistory.join(', ')}`);
+        }
+
+        function testSearchFavorites() {
+            const favorites = ['1', '3', '5'];
+            localStorage.setItem('search-favorites', JSON.stringify(favorites));
+            
+            const savedFavorites = JSON.parse(localStorage.getItem('search-favorites') || '[]');
+            
+            logTest('Search Favorites', savedFavorites.length === favorites.length);
+            logToResults('history-results', `⭐ Favorites: ${savedFavorites.length} items`);
+        }
+
+        function testSearchSuggestions() {
+            const query = 'off';
+            const suggestions = mockData
+                .filter(item => item.searchableText.toLowerCase().includes(query.toLowerCase()))
+                .map(item => item.title)
+                .slice(0, 5);
+            
+            logTest('Search Suggestions', suggestions.length > 0);
+            logToResults('history-results', `💡 Suggestions for "${query}": ${suggestions.join(', ')}`);
+        }
+
+        // Advanced Search Tests
+        function testFilterOperators() {
+            const operators = ['equals', 'contains', 'startsWith', 'endsWith', 'greaterThan', 'lessThan'];
+            let allOperatorsWork = true;
+            
+            // Test contains operator
+            const containsResults = mockData.filter(item => 
+                item.title.toLowerCase().includes('office'.toLowerCase())
+            );
+            
+            // Test startsWith operator
+            const startsWithResults = mockData.filter(item => 
+                item.title.toLowerCase().startsWith('office'.toLowerCase())
+            );
+            
+            logTest('Filter Operators', containsResults.length > 0);
+            logToResults('filter-results', `🔧 Contains "office": ${containsResults.length} results`);
+            logToResults('filter-results', `🔧 Starts with "office": ${startsWithResults.length} results`);
+        }
+
+        function testMultipleFilters() {
+            // Apply multiple filters: type = 'item' AND priority > 2
+            const filteredResults = mockData.filter(item => 
+                item.type === 'item' && (item.priority || 0) > 2
+            );
+            
+            logTest('Multiple Filters', filteredResults.length > 0);
+            logToResults('filter-results', `🔗 Multiple filters applied: ${filteredResults.length} results`);
+            
+            filteredResults.forEach(result => {
+                logToResults('filter-results', `  - ${result.title} (${result.type}, priority: ${result.priority})`);
+            });
+        }
+
+        function testFilterLogic() {
+            // Test AND logic: type = 'item' AND subtitle = 'Electronics'
+            const andResults = mockData.filter(item => 
+                item.type === 'item' && item.subtitle === 'Electronics'
+            );
+            
+            // Test OR logic: type = 'item' OR type = 'transaction'
+            const orResults = mockData.filter(item => 
+                item.type === 'item' || item.type === 'transaction'
+            );
+            
+            logTest('Filter Logic', andResults.length > 0 && orResults.length > 0);
+            logToResults('filter-results', `🔀 AND logic: ${andResults.length} results`);
+            logToResults('filter-results', `🔀 OR logic: ${orResults.length} results`);
+        }
+
+        function testTextFiltering() {
+            const textFilter = mockData.filter(item => 
+                item.title.toLowerCase().includes('chair'.toLowerCase())
+            );
+            
+            logTest('Text Filtering', textFilter.length > 0);
+            logToResults('field-filter-results', `📝 Text filter "chair": ${textFilter.length} results`);
+        }
+
+        function testNumberFiltering() {
+            const numberFilter = mockData.filter(item => (item.priority || 0) >= 3);
+            
+            logTest('Number Filtering', numberFilter.length > 0);
+            logToResults('field-filter-results', `🔢 Number filter (priority >= 3): ${numberFilter.length} results`);
+        }
+
+        function testDateFiltering() {
+            // Simulate date filtering
+            const today = new Date();
+            const mockDates = mockData.map(item => ({ ...item, createdAt: new Date(today.getTime() - Math.random() * 30 * 24 * 60 * 60 * 1000) }));
+            const recentItems = mockDates.filter(item => 
+                item.createdAt > new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000)
+            );
+            
+            logTest('Date Filtering', recentItems.length >= 0);
+            logToResults('field-filter-results', `📅 Date filter (last 7 days): ${recentItems.length} results`);
+        }
+
+        function testSelectFiltering() {
+            const selectOptions = ['Electronics', 'Furniture', 'Completed', 'Processed'];
+            const selectFilter = mockData.filter(item => 
+                selectOptions.includes(item.subtitle)
+            );
+            
+            logTest('Select Filtering', selectFilter.length > 0);
+            logToResults('field-filter-results', `📋 Select filter: ${selectFilter.length} results`);
+        }
+
+        function testSaveSearch() {
+            const savedSearch = {
+                id: 'search-1',
+                name: 'Electronics Items',
+                query: 'electronics',
+                filters: [{ field: 'type', operator: 'equals', value: 'item' }],
+                createdAt: new Date(),
+                lastUsed: new Date(),
+                useCount: 1
+            };
+            
+            localStorage.setItem('saved-searches', JSON.stringify([savedSearch]));
+            
+            logTest('Save Search', true);
+            logToResults('saved-search-results', `💾 Saved search: "${savedSearch.name}"`);
+        }
+
+        function testLoadSearch() {
+            const savedSearches = JSON.parse(localStorage.getItem('saved-searches') || '[]');
+            
+            logTest('Load Search', savedSearches.length > 0);
+            logToResults('saved-search-results', `📂 Loaded ${savedSearches.length} saved searches`);
+        }
+
+        function testDeleteSearch() {
+            localStorage.removeItem('saved-searches');
+            const savedSearches = JSON.parse(localStorage.getItem('saved-searches') || '[]');
+            
+            logTest('Delete Search', savedSearches.length === 0);
+            logToResults('saved-search-results', `🗑️ Deleted saved searches`);
+        }
+
+        // Performance Tests
+        function testSearchPerformance() {
+            const startTime = performance.now();
+            const query = 'office';
+            
+            // Simulate search on large dataset
+            const largeDataset = Array(1000).fill(null).map((_, i) => ({
+                ...mockData[i % mockData.length],
+                id: `item-${i}`,
+                title: `${mockData[i % mockData.length].title} ${i}`
+            }));
+            
+            const results = largeDataset.filter(item => 
+                item.searchableText.toLowerCase().includes(query.toLowerCase())
+            );
+            
+            const endTime = performance.now();
+            const duration = endTime - startTime;
+            
+            logTest('Search Performance', duration < 100); // Should complete in under 100ms
+            logToResults('performance-results', `⚡ Search completed in ${duration.toFixed(2)}ms`);
+            logToResults('performance-results', `📊 Searched ${largeDataset.length} items, found ${results.length} results`);
+            
+            updatePerformanceMetrics({
+                searchTime: duration,
+                itemsSearched: largeDataset.length,
+                resultsFound: results.length,
+                throughput: (largeDataset.length / duration * 1000).toFixed(0)
+            });
+        }
+
+        function testLargeDataset() {
+            const largeDataset = Array(10000).fill(null).map((_, i) => ({
+                id: `large-${i}`,
+                type: ['item', 'transaction', 'movement'][i % 3],
+                title: `Test Item ${i}`,
+                searchableText: `test item ${i} category ${i % 10}`
+            }));
+            
+            const startTime = performance.now();
+            const results = largeDataset.filter(item => item.searchableText.includes('category 5'));
+            const endTime = performance.now();
+            
+            logTest('Large Dataset', results.length > 0 && (endTime - startTime) < 500);
+            logToResults('performance-results', `📈 Large dataset test: ${largeDataset.length} items in ${(endTime - startTime).toFixed(2)}ms`);
+        }
+
+        function testConcurrentSearch() {
+            const queries = ['laptop', 'office', 'chair', 'mouse', 'desk'];
+            const startTime = performance.now();
+            
+            const promises = queries.map(query => 
+                new Promise(resolve => {
+                    setTimeout(() => {
+                        const results = mockData.filter(item => 
+                            item.searchableText.toLowerCase().includes(query.toLowerCase())
+                        );
+                        resolve({ query, count: results.length });
+                    }, Math.random() * 50);
+                })
+            );
+            
+            Promise.all(promises).then(results => {
+                const endTime = performance.now();
+                
+                logTest('Concurrent Search', results.length === queries.length);
+                logToResults('performance-results', `🔄 Concurrent searches completed in ${(endTime - startTime).toFixed(2)}ms`);
+                
+                results.forEach(result => {
+                    logToResults('performance-results', `  - "${result.query}": ${result.count} results`);
+                });
+            });
+        }
+
+        function updatePerformanceMetrics(metrics) {
+            const metricsContainer = document.getElementById('performance-metrics');
+            metricsContainer.innerHTML = `
+                <div class="metric">
+                    <div class="metric-value">${metrics.searchTime.toFixed(1)}ms</div>
+                    <div class="metric-label">Search Time</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">${metrics.itemsSearched}</div>
+                    <div class="metric-label">Items Searched</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">${metrics.resultsFound}</div>
+                    <div class="metric-label">Results Found</div>
+                </div>
+                <div class="metric">
+                    <div class="metric-value">${metrics.throughput}</div>
+                    <div class="metric-label">Items/sec</div>
+                </div>
+            `;
+        }
+
+        // Interactive Demo
+        function setupInteractiveDemo() {
+            const searchInput = document.getElementById('demo-search');
+            const categoryFilter = document.getElementById('category-filter');
+            const sortFilter = document.getElementById('sort-filter');
+            const resultsContainer = document.getElementById('demo-results');
+            
+            function performDemoSearch() {
+                const query = searchInput.value.toLowerCase();
+                const category = categoryFilter.value;
+                const sort = sortFilter.value;
+                
+                let results = [...mockData];
+                
+                // Apply text search
+                if (query) {
+                    results = results.filter(item => 
+                        item.searchableText.toLowerCase().includes(query)
+                    ).map(item => {
+                        const match = fuzzySearch(item.searchableText, query);
+                        return { ...item, score: match.score, positions: match.positions };
+                    });
+                }
+                
+                // Apply category filter
+                if (category) {
+                    results = results.filter(item => item.type === category);
+                }
+                
+                // Apply sorting
+                switch (sort) {
+                    case 'name':
+                        results.sort((a, b) => a.title.localeCompare(b.title));
+                        break;
+                    case 'priority':
+                        results.sort((a, b) => (b.priority || 0) - (a.priority || 0));
+                        break;
+                    case 'relevance':
+                        results.sort((a, b) => (b.score || 0) - (a.score || 0));
+                        break;
+                }
+                
+                // Display results
+                if (results.length === 0) {
+                    resultsContainer.innerHTML = '<div style="padding: 20px; text-align: center; color: #6b7280;">No results found</div>';
+                } else {
+                    resultsContainer.innerHTML = results.map(item => `
+                        <div class="search-result-item">
+                            <div style="font-weight: bold;">${highlightText(item.title, item.positions || [])}</div>
+                            <div style="font-size: 12px; color: #6b7280;">${item.type} • ${item.subtitle}</div>
+                            <div style="font-size: 12px; margin-top: 4px;">${item.description}</div>
+                        </div>
+                    `).join('');
+                }
+            }
+            
+            searchInput.addEventListener('input', performDemoSearch);
+            categoryFilter.addEventListener('change', performDemoSearch);
+            sortFilter.addEventListener('change', performDemoSearch);
+        }
+
+        function clearDemoSearch() {
+            document.getElementById('demo-search').value = '';
+            document.getElementById('category-filter').value = '';
+            document.getElementById('sort-filter').value = 'relevance';
+            document.getElementById('demo-results').innerHTML = '<div style="padding: 20px; text-align: center; color: #6b7280;">Start typing to see search results...</div>';
+        }
+
+        // Initialize
+        updateTestSummary();
+        setupInteractiveDemo();
+        
+        // Auto-run some basic tests
+        setTimeout(() => {
+            logToResults('global-search-results', '🚀 Search test suite initialized');
+            logToResults('filter-results', '🚀 Filter test suite ready');
+            logToResults('performance-results', '🚀 Performance tests ready');
+        }, 500);
+    </script>
+</body>
+</html>

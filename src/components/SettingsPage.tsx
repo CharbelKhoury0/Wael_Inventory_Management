@@ -1,7 +1,8 @@
 import React, { useState, useEffect, createContext, useRef } from 'react';
 import Sidebar from './Sidebar';
 import TopNav from './TopNav';
-import { useTheme, useWarehouse } from '../App';
+import { useTheme } from '../contexts/ThemeContext';
+import { useWarehouse } from '../App';
 import { 
   User, 
   Bell, 

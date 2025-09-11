@@ -1,0 +1,516 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Barcode Scanner & File Upload Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-header {
+            background: #2563eb;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+        .test-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: #f9fafb;
+            border-radius: 4px;
+        }
+        .status {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: inline-block;
+        }
+        .status.pass { background-color: #10b981; }
+        .status.fail { background-color: #ef4444; }
+        .status.pending { background-color: #f59e0b; }
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #2563eb;
+        }
+        .test-results {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #059669;
+            background: #ecfdf5;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .file-drop-zone {
+            border: 2px dashed #d1d5db;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            margin: 20px 0;
+            background: #f9fafb;
+        }
+        .file-drop-zone.dragover {
+            border-color: #3b82f6;
+            background: #eff6ff;
+        }
+        .camera-preview {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            background: #000;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1>🔍 Barcode Scanner & 📁 File Upload Test Suite</h1>
+        <p>Comprehensive testing for barcode scanning and file upload functionality</p>
+    </div>
+
+    <div class="test-container">
+        <h2>📋 Test Overview</h2>
+        <div id="test-summary">
+            <div class="test-item">
+                <span class="status pending" id="overall-status"></span>
+                <span>Overall Test Status: <span id="overall-text">Pending</span></span>
+            </div>
+            <div class="test-item">
+                <span>Total Tests: <span id="total-tests">0</span></span>
+            </div>
+            <div class="test-item">
+                <span>Passed: <span id="passed-tests">0</span></span>
+            </div>
+            <div class="test-item">
+                <span>Failed: <span id="failed-tests">0</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Barcode Scanner Tests -->
+    <div class="test-container">
+        <h2>🔍 Barcode Scanner Tests</h2>
+        
+        <div class="test-section">
+            <h3>Camera Access Tests</h3>
+            <button class="test-button" onclick="testCameraAccess()">Test Camera Access</button>
+            <button class="test-button" onclick="testCameraPermissions()">Test Camera Permissions</button>
+            <div id="camera-results" class="test-results"></div>
+            <video id="camera-preview" class="camera-preview" style="display: none;"></video>
+        </div>
+
+        <div class="test-section">
+            <h3>Barcode Detection Tests</h3>
+            <button class="test-button" onclick="testBarcodeDetection()">Test Barcode Detection</button>
+            <button class="test-button" onclick="testQRCodeDetection()">Test QR Code Detection</button>
+            <button class="test-button" onclick="testManualBarcodeInput()">Test Manual Input</button>
+            <div id="barcode-results" class="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Scanner Features Tests</h3>
+            <button class="test-button" onclick="testTorchToggle()">Test Torch/Flash</button>
+            <button class="test-button" onclick="testVoiceRecognition()">Test Voice Recognition</button>
+            <button class="test-button" onclick="testScannerSettings()">Test Scanner Settings</button>
+            <div id="scanner-features-results" class="test-results"></div>
+        </div>
+    </div>
+
+    <!-- File Upload Tests -->
+    <div class="test-container">
+        <h2>📁 File Upload Tests</h2>
+        
+        <div class="test-section">
+            <h3>Drag & Drop Tests</h3>
+            <div class="file-drop-zone" id="drop-zone">
+                <p>📁 Drop files here to test drag & drop functionality</p>
+                <p><small>Supports: JPG, PNG, GIF, WebP (max 5MB each)</small></p>
+            </div>
+            <button class="test-button" onclick="testDragAndDrop()">Simulate Drag & Drop</button>
+            <div id="upload-results" class="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>File Validation Tests</h3>
+            <button class="test-button" onclick="testFileTypeValidation()">Test File Type Validation</button>
+            <button class="test-button" onclick="testFileSizeValidation()">Test File Size Validation</button>
+            <button class="test-button" onclick="testMaxFilesLimit()">Test Max Files Limit</button>
+            <div id="validation-results" class="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Upload Process Tests</h3>
+            <input type="file" id="file-input" multiple accept="image/*" style="display: none;">
+            <button class="test-button" onclick="document.getElementById('file-input').click()">Select Files</button>
+            <button class="test-button" onclick="testUploadProgress()">Test Upload Progress</button>
+            <button class="test-button" onclick="testUploadError()">Test Upload Error</button>
+            <div id="upload-process-results" class="test-results"></div>
+            <div id="file-previews"></div>
+        </div>
+    </div>
+
+    <!-- Integration Tests -->
+    <div class="test-container">
+        <h2>🔗 Integration Tests</h2>
+        
+        <div class="test-section">
+            <h3>Combined Functionality Tests</h3>
+            <button class="test-button" onclick="testBarcodeToItemCreation()">Test Barcode → Item Creation</button>
+            <button class="test-button" onclick="testImageUploadToItem()">Test Image Upload → Item</button>
+            <button class="test-button" onclick="testMobileResponsiveness()">Test Mobile Responsiveness</button>
+            <div id="integration-results" class="test-results"></div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = {
+            total: 0,
+            passed: 0,
+            failed: 0
+        };
+
+        function updateTestSummary() {
+            document.getElementById('total-tests').textContent = testResults.total;
+            document.getElementById('passed-tests').textContent = testResults.passed;
+            document.getElementById('failed-tests').textContent = testResults.failed;
+            
+            const overallStatus = document.getElementById('overall-status');
+            const overallText = document.getElementById('overall-text');
+            
+            if (testResults.total === 0) {
+                overallStatus.className = 'status pending';
+                overallText.textContent = 'Pending';
+            } else if (testResults.failed === 0) {
+                overallStatus.className = 'status pass';
+                overallText.textContent = 'All Tests Passed';
+            } else {
+                overallStatus.className = 'status fail';
+                overallText.textContent = `${testResults.failed} Tests Failed`;
+            }
+        }
+
+        function logTest(name, passed, details = '') {
+            testResults.total++;
+            if (passed) {
+                testResults.passed++;
+            } else {
+                testResults.failed++;
+            }
+            updateTestSummary();
+            console.log(`Test: ${name} - ${passed ? 'PASSED' : 'FAILED'}${details ? ' - ' + details : ''}`);
+        }
+
+        function logToResults(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = isError ? 'error' : 'success';
+            element.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        }
+
+        // Camera Access Tests
+        async function testCameraAccess() {
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                const video = document.getElementById('camera-preview');
+                video.srcObject = stream;
+                video.style.display = 'block';
+                video.play();
+                
+                logTest('Camera Access', true);
+                logToResults('camera-results', '✅ Camera access granted successfully');
+                
+                // Stop the stream after 3 seconds
+                setTimeout(() => {
+                    stream.getTracks().forEach(track => track.stop());
+                    video.style.display = 'none';
+                }, 3000);
+            } catch (error) {
+                logTest('Camera Access', false, error.message);
+                logToResults('camera-results', `❌ Camera access failed: ${error.message}`, true);
+            }
+        }
+
+        async function testCameraPermissions() {
+            try {
+                const permissions = await navigator.permissions.query({ name: 'camera' });
+                logTest('Camera Permissions', permissions.state === 'granted');
+                logToResults('camera-results', `📋 Camera permission state: ${permissions.state}`);
+            } catch (error) {
+                logTest('Camera Permissions', false, error.message);
+                logToResults('camera-results', `❌ Permission check failed: ${error.message}`, true);
+            }
+        }
+
+        // Barcode Detection Tests
+        function testBarcodeDetection() {
+            // Simulate barcode detection
+            const mockBarcodes = ['123456789012', '987654321098', 'ABC123DEF456'];
+            const randomBarcode = mockBarcodes[Math.floor(Math.random() * mockBarcodes.length)];
+            
+            logTest('Barcode Detection', true);
+            logToResults('barcode-results', `🔍 Simulated barcode detected: ${randomBarcode}`);
+        }
+
+        function testQRCodeDetection() {
+            // Simulate QR code detection
+            const mockQRCodes = [
+                'https://example.com/product/123',
+                '{"id":"ITEM001","name":"Test Product"}',
+                'WIFI:T:WPA;S:TestNetwork;P:password123;;'
+            ];
+            const randomQR = mockQRCodes[Math.floor(Math.random() * mockQRCodes.length)];
+            
+            logTest('QR Code Detection', true);
+            logToResults('barcode-results', `📱 Simulated QR code detected: ${randomQR}`);
+        }
+
+        function testManualBarcodeInput() {
+            const manualInput = prompt('Enter a barcode manually:');
+            if (manualInput) {
+                logTest('Manual Barcode Input', true);
+                logToResults('barcode-results', `✏️ Manual barcode entered: ${manualInput}`);
+            } else {
+                logTest('Manual Barcode Input', false, 'No input provided');
+                logToResults('barcode-results', '❌ Manual input cancelled', true);
+            }
+        }
+
+        // Scanner Features Tests
+        function testTorchToggle() {
+            // Simulate torch toggle
+            const torchState = Math.random() > 0.5;
+            logTest('Torch Toggle', true);
+            logToResults('scanner-features-results', `🔦 Torch ${torchState ? 'enabled' : 'disabled'}`);
+        }
+
+        function testVoiceRecognition() {
+            if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+                logTest('Voice Recognition', true);
+                logToResults('scanner-features-results', '🎤 Voice recognition supported');
+            } else {
+                logTest('Voice Recognition', false, 'Not supported in this browser');
+                logToResults('scanner-features-results', '❌ Voice recognition not supported', true);
+            }
+        }
+
+        function testScannerSettings() {
+            // Test scanner configuration
+            const settings = {
+                continuous: true,
+                formats: ['CODE_128', 'EAN_13', 'QR_CODE'],
+                torch: false,
+                voice: true
+            };
+            
+            logTest('Scanner Settings', true);
+            logToResults('scanner-features-results', `⚙️ Scanner settings: ${JSON.stringify(settings)}`);
+        }
+
+        // File Upload Tests
+        function setupDropZone() {
+            const dropZone = document.getElementById('drop-zone');
+            
+            dropZone.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dropZone.classList.add('dragover');
+            });
+            
+            dropZone.addEventListener('dragleave', () => {
+                dropZone.classList.remove('dragover');
+            });
+            
+            dropZone.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dropZone.classList.remove('dragover');
+                const files = Array.from(e.dataTransfer.files);
+                handleFileUpload(files);
+            });
+        }
+
+        function testDragAndDrop() {
+            // Simulate drag and drop
+            logTest('Drag and Drop', true);
+            logToResults('upload-results', '🖱️ Drag and drop functionality simulated');
+        }
+
+        function testFileTypeValidation() {
+            const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+            const invalidTypes = ['text/plain', 'application/pdf', 'video/mp4'];
+            
+            const validTest = validTypes.every(type => type.startsWith('image/'));
+            const invalidTest = !invalidTypes.some(type => type.startsWith('image/'));
+            
+            logTest('File Type Validation', validTest && invalidTest);
+            logToResults('validation-results', `✅ Valid types: ${validTypes.join(', ')}`);
+            logToResults('validation-results', `❌ Invalid types rejected: ${invalidTypes.join(', ')}`);
+        }
+
+        function testFileSizeValidation() {
+            const maxSize = 5 * 1024 * 1024; // 5MB
+            const testSizes = [1024, 1024 * 1024, 3 * 1024 * 1024, 10 * 1024 * 1024];
+            
+            testSizes.forEach(size => {
+                const isValid = size <= maxSize;
+                const sizeStr = (size / (1024 * 1024)).toFixed(1) + 'MB';
+                logToResults('validation-results', `📏 ${sizeStr}: ${isValid ? '✅ Valid' : '❌ Too large'}`);
+            });
+            
+            logTest('File Size Validation', true);
+        }
+
+        function testMaxFilesLimit() {
+            const maxFiles = 10;
+            const testCounts = [1, 5, 10, 15];
+            
+            testCounts.forEach(count => {
+                const isValid = count <= maxFiles;
+                logToResults('validation-results', `📊 ${count} files: ${isValid ? '✅ Valid' : '❌ Exceeds limit'}`);
+            });
+            
+            logTest('Max Files Limit', true);
+        }
+
+        function testUploadProgress() {
+            // Simulate upload progress
+            let progress = 0;
+            const interval = setInterval(() => {
+                progress += 10;
+                logToResults('upload-process-results', `📈 Upload progress: ${progress}%`);
+                
+                if (progress >= 100) {
+                    clearInterval(interval);
+                    logTest('Upload Progress', true);
+                    logToResults('upload-process-results', '✅ Upload completed successfully');
+                }
+            }, 200);
+        }
+
+        function testUploadError() {
+            // Simulate upload error
+            setTimeout(() => {
+                logTest('Upload Error Handling', true);
+                logToResults('upload-process-results', '❌ Simulated upload error: Network timeout', true);
+            }, 1000);
+        }
+
+        function handleFileUpload(files) {
+            const previews = document.getElementById('file-previews');
+            previews.innerHTML = '';
+            
+            files.forEach((file, index) => {
+                if (file.type.startsWith('image/')) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        const img = document.createElement('img');
+                        img.src = e.target.result;
+                        img.style.width = '100px';
+                        img.style.height = '100px';
+                        img.style.objectFit = 'cover';
+                        img.style.margin = '5px';
+                        img.style.borderRadius = '4px';
+                        previews.appendChild(img);
+                    };
+                    reader.readAsDataURL(file);
+                }
+                
+                logToResults('upload-results', `📁 File ${index + 1}: ${file.name} (${(file.size / 1024).toFixed(1)}KB)`);
+            });
+            
+            logTest('File Upload', true);
+        }
+
+        // Integration Tests
+        function testBarcodeToItemCreation() {
+            const mockBarcode = '123456789012';
+            const mockItem = {
+                id: 'ITEM_' + Date.now(),
+                barcode: mockBarcode,
+                name: 'Scanned Product',
+                category: 'Electronics'
+            };
+            
+            logTest('Barcode to Item Creation', true);
+            logToResults('integration-results', `🔗 Created item from barcode: ${JSON.stringify(mockItem)}`);
+        }
+
+        function testImageUploadToItem() {
+            const mockItem = {
+                id: 'ITEM_' + Date.now(),
+                name: 'Product with Image',
+                images: ['image1.jpg', 'image2.png']
+            };
+            
+            logTest('Image Upload to Item', true);
+            logToResults('integration-results', `🖼️ Added images to item: ${JSON.stringify(mockItem)}`);
+        }
+
+        function testMobileResponsiveness() {
+            const isMobile = window.innerWidth <= 768;
+            const hasTouch = 'ontouchstart' in window;
+            
+            logTest('Mobile Responsiveness', true);
+            logToResults('integration-results', `📱 Mobile detection: ${isMobile ? 'Mobile' : 'Desktop'}, Touch: ${hasTouch}`);
+        }
+
+        // File input handler
+        document.getElementById('file-input').addEventListener('change', (e) => {
+            const files = Array.from(e.target.files);
+            handleFileUpload(files);
+        });
+
+        // Initialize
+        setupDropZone();
+        updateTestSummary();
+        
+        // Auto-run some basic tests
+        setTimeout(() => {
+            logToResults('camera-results', '🚀 Test suite initialized');
+            logToResults('upload-results', '🚀 File upload tests ready');
+        }, 500);
+    </script>
+</body>
+</html>

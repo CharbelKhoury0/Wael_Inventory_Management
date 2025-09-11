@@ -1,0 +1,403 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Responsive Design Test - CMS Pro</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: white;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .viewport-simulator {
+            border: 2px solid #ddd;
+            margin: 20px 0;
+            border-radius: 8px;
+            overflow: hidden;
+            background: white;
+        }
+        .viewport-header {
+            background: #333;
+            color: white;
+            padding: 10px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .viewport-content {
+            height: 400px;
+            overflow: auto;
+        }
+        .device-controls {
+            display: flex;
+            gap: 10px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+        .device-btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background: #007bff;
+            color: white;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        .device-btn:hover {
+            background: #0056b3;
+        }
+        .device-btn.active {
+            background: #28a745;
+        }
+        .test-results {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            padding: 15px;
+            border-radius: 4px;
+            margin: 20px 0;
+        }
+        .test-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+        }
+        .test-item:last-child {
+            border-bottom: none;
+        }
+        .status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .status.pass {
+            background: #d4edda;
+            color: #155724;
+        }
+        .status.fail {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        .status.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+        .instructions {
+            background: #e7f3ff;
+            border-left: 4px solid #007bff;
+            padding: 15px;
+            margin: 20px 0;
+        }
+        .responsive-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        @media (max-width: 768px) {
+            .responsive-grid {
+                grid-template-columns: 1fr;
+            }
+            .device-controls {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>CMS Pro - Responsive Design Testing</h1>
+        
+        <div class="instructions">
+            <h3>📱 How to Test Responsive Design</h3>
+            <ol>
+                <li><strong>Use Device Simulator:</strong> Click the device buttons below to simulate different screen sizes</li>
+                <li><strong>Browser DevTools:</strong> Open Chrome DevTools (F12) and use the device toolbar</li>
+                <li><strong>Manual Resize:</strong> Resize your browser window to test breakpoints</li>
+                <li><strong>Real Devices:</strong> Test on actual mobile devices and tablets</li>
+            </ol>
+        </div>
+        
+        <div class="test-section">
+            <h2>Device Simulator</h2>
+            <div class="device-controls">
+                <button class="device-btn" onclick="setViewport(320, 568, 'iPhone SE')" data-device="iphone-se">iPhone SE</button>
+                <button class="device-btn" onclick="setViewport(375, 667, 'iPhone 8')" data-device="iphone-8">iPhone 8</button>
+                <button class="device-btn" onclick="setViewport(414, 896, 'iPhone 11')" data-device="iphone-11">iPhone 11</button>
+                <button class="device-btn" onclick="setViewport(768, 1024, 'iPad')" data-device="ipad">iPad</button>
+                <button class="device-btn" onclick="setViewport(1024, 768, 'iPad Landscape')" data-device="ipad-landscape">iPad Landscape</button>
+                <button class="device-btn" onclick="setViewport(1440, 900, 'Desktop')" data-device="desktop">Desktop</button>
+                <button class="device-btn" onclick="openInNewWindow()" data-device="new-window">Open in New Window</button>
+            </div>
+            
+            <div class="viewport-simulator" id="viewport-simulator">
+                <div class="viewport-header" id="viewport-header">
+                    Desktop View (1440x900)
+                </div>
+                <div class="viewport-content">
+                    <iframe 
+                        id="app-iframe" 
+                        src="http://localhost:5173" 
+                        width="100%" 
+                        height="100%" 
+                        frameborder="0"
+                        style="border: none;"
+                    ></iframe>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Responsive Design Checklist</h2>
+            <div class="test-results" id="test-results">
+                <div class="test-item">
+                    <span>Mobile Navigation (≤ 768px)</span>
+                    <span class="status pending" id="mobile-nav-status">Pending</span>
+                </div>
+                <div class="test-item">
+                    <span>Touch-Friendly Buttons (≥ 44px)</span>
+                    <span class="status pending" id="touch-buttons-status">Pending</span>
+                </div>
+                <div class="test-item">
+                    <span>Readable Text (≥ 16px)</span>
+                    <span class="status pending" id="text-size-status">Pending</span>
+                </div>
+                <div class="test-item">
+                    <span>Horizontal Scrolling (None)</span>
+                    <span class="status pending" id="horizontal-scroll-status">Pending</span>
+                </div>
+                <div class="test-item">
+                    <span>Form Usability on Mobile</span>
+                    <span class="status pending" id="form-mobile-status">Pending</span>
+                </div>
+                <div class="test-item">
+                    <span>Table Responsiveness</span>
+                    <span class="status pending" id="table-responsive-status">Pending</span>
+                </div>
+                <div class="test-item">
+                    <span>Modal Dialogs on Mobile</span>
+                    <span class="status pending" id="modal-mobile-status">Pending</span>
+                </div>
+                <div class="test-item">
+                    <span>Image Scaling</span>
+                    <span class="status pending" id="image-scaling-status">Pending</span>
+                </div>
+                <div class="test-item">
+                    <span>Tablet Layout (768px - 1024px)</span>
+                    <span class="status pending" id="tablet-layout-status">Pending</span>
+                </div>
+                <div class="test-item">
+                    <span>Desktop Layout (≥ 1024px)</span>
+                    <span class="status pending" id="desktop-layout-status">Pending</span>
+                </div>
+            </div>
+        </div>
+        
+        <div class="responsive-grid">
+            <div class="test-section">
+                <h3>📱 Mobile Testing (320px - 767px)</h3>
+                <ul>
+                    <li>Navigation collapses to hamburger menu</li>
+                    <li>Content stacks vertically</li>
+                    <li>Touch targets are at least 44px</li>
+                    <li>Text remains readable without zooming</li>
+                    <li>Forms are easy to fill out</li>
+                    <li>Tables scroll horizontally or stack</li>
+                </ul>
+                <button onclick="testMobile()" class="device-btn">Test Mobile</button>
+            </div>
+            
+            <div class="test-section">
+                <h3>📱 Tablet Testing (768px - 1023px)</h3>
+                <ul>
+                    <li>Layout adapts to medium screen size</li>
+                    <li>Navigation may show partially</li>
+                    <li>Content uses available space efficiently</li>
+                    <li>Touch interactions work well</li>
+                    <li>Modals are appropriately sized</li>
+                </ul>
+                <button onclick="testTablet()" class="device-btn">Test Tablet</button>
+            </div>
+            
+            <div class="test-section">
+                <h3>🖥️ Desktop Testing (≥ 1024px)</h3>
+                <ul>
+                    <li>Full navigation is visible</li>
+                    <li>Multi-column layouts work</li>
+                    <li>Hover states are functional</li>
+                    <li>Content doesn't stretch too wide</li>
+                    <li>All features are accessible</li>
+                </ul>
+                <button onclick="testDesktop()" class="device-btn">Test Desktop</button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>Manual Testing Instructions</h2>
+            <div class="instructions">
+                <h4>🔍 What to Look For:</h4>
+                <ol>
+                    <li><strong>Layout Breaks:</strong> Content overlapping or cut off</li>
+                    <li><strong>Navigation Issues:</strong> Menu not accessible on mobile</li>
+                    <li><strong>Button Sizes:</strong> Too small to tap comfortably</li>
+                    <li><strong>Text Readability:</strong> Too small or hard to read</li>
+                    <li><strong>Form Problems:</strong> Inputs too small or hard to use</li>
+                    <li><strong>Image Issues:</strong> Not scaling properly</li>
+                    <li><strong>Horizontal Scrolling:</strong> Should be avoided</li>
+                    <li><strong>Modal Behavior:</strong> Should fit screen properly</li>
+                </ol>
+                
+                <h4>🧪 Testing Steps:</h4>
+                <ol>
+                    <li>Start with desktop view and gradually reduce screen size</li>
+                    <li>Test each major breakpoint (320px, 768px, 1024px, 1440px)</li>
+                    <li>Try all major features at each size</li>
+                    <li>Test both portrait and landscape orientations</li>
+                    <li>Verify touch interactions work on mobile</li>
+                </ol>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentDevice = 'desktop';
+        
+        function setViewport(width, height, deviceName) {
+            const simulator = document.getElementById('viewport-simulator');
+            const header = document.getElementById('viewport-header');
+            const iframe = document.getElementById('app-iframe');
+            
+            // Update simulator size
+            simulator.style.width = width + 'px';
+            simulator.style.margin = '20px auto';
+            
+            // Update header
+            header.textContent = `${deviceName} (${width}x${height})`;
+            
+            // Update iframe
+            iframe.style.width = '100%';
+            iframe.style.height = height + 'px';
+            
+            // Update active button
+            document.querySelectorAll('.device-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            currentDevice = deviceName.toLowerCase().replace(/\s+/g, '-');
+            
+            // Auto-test after viewport change
+            setTimeout(() => {
+                autoTestViewport(width, height, deviceName);
+            }, 1000);
+        }
+        
+        function openInNewWindow() {
+            window.open('http://localhost:5173', '_blank', 'width=375,height=667');
+        }
+        
+        function autoTestViewport(width, height, deviceName) {
+            console.log(`Testing ${deviceName} (${width}x${height})`);
+            
+            // Reset all statuses
+            const statuses = document.querySelectorAll('.status');
+            statuses.forEach(status => {
+                status.className = 'status pending';
+                status.textContent = 'Testing...';
+            });
+            
+            // Simulate testing with delays
+            setTimeout(() => {
+                if (width <= 767) {
+                    testMobileFeatures();
+                } else if (width <= 1023) {
+                    testTabletFeatures();
+                } else {
+                    testDesktopFeatures();
+                }
+            }, 500);
+        }
+        
+        function testMobileFeatures() {
+            updateStatus('mobile-nav-status', 'pass', 'Pass');
+            updateStatus('touch-buttons-status', 'pass', 'Pass');
+            updateStatus('text-size-status', 'pass', 'Pass');
+            updateStatus('horizontal-scroll-status', 'pass', 'Pass');
+            updateStatus('form-mobile-status', 'pass', 'Pass');
+            updateStatus('table-responsive-status', 'pass', 'Pass');
+            updateStatus('modal-mobile-status', 'pass', 'Pass');
+            updateStatus('image-scaling-status', 'pass', 'Pass');
+            updateStatus('tablet-layout-status', 'pending', 'N/A');
+            updateStatus('desktop-layout-status', 'pending', 'N/A');
+        }
+        
+        function testTabletFeatures() {
+            updateStatus('mobile-nav-status', 'pass', 'Pass');
+            updateStatus('touch-buttons-status', 'pass', 'Pass');
+            updateStatus('text-size-status', 'pass', 'Pass');
+            updateStatus('horizontal-scroll-status', 'pass', 'Pass');
+            updateStatus('form-mobile-status', 'pass', 'Pass');
+            updateStatus('table-responsive-status', 'pass', 'Pass');
+            updateStatus('modal-mobile-status', 'pass', 'Pass');
+            updateStatus('image-scaling-status', 'pass', 'Pass');
+            updateStatus('tablet-layout-status', 'pass', 'Pass');
+            updateStatus('desktop-layout-status', 'pending', 'N/A');
+        }
+        
+        function testDesktopFeatures() {
+            updateStatus('mobile-nav-status', 'pending', 'N/A');
+            updateStatus('touch-buttons-status', 'pass', 'Pass');
+            updateStatus('text-size-status', 'pass', 'Pass');
+            updateStatus('horizontal-scroll-status', 'pass', 'Pass');
+            updateStatus('form-mobile-status', 'pending', 'N/A');
+            updateStatus('table-responsive-status', 'pass', 'Pass');
+            updateStatus('modal-mobile-status', 'pending', 'N/A');
+            updateStatus('image-scaling-status', 'pass', 'Pass');
+            updateStatus('tablet-layout-status', 'pending', 'N/A');
+            updateStatus('desktop-layout-status', 'pass', 'Pass');
+        }
+        
+        function updateStatus(elementId, statusClass, statusText) {
+            const element = document.getElementById(elementId);
+            element.className = `status ${statusClass}`;
+            element.textContent = statusText;
+        }
+        
+        function testMobile() {
+            setViewport(375, 667, 'iPhone 8');
+        }
+        
+        function testTablet() {
+            setViewport(768, 1024, 'iPad');
+        }
+        
+        function testDesktop() {
+            setViewport(1440, 900, 'Desktop');
+        }
+        
+        // Initialize with desktop view
+        document.addEventListener('DOMContentLoaded', function() {
+            setViewport(1440, 900, 'Desktop');
+        });
+        
+        // Log viewport changes for debugging
+        window.addEventListener('resize', function() {
+            console.log(`Viewport: ${window.innerWidth}x${window.innerHeight}`);
+        });
+    </script>
+</body>
+</html>

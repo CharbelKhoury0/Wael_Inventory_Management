@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTheme } from '../App';
+import { useTheme } from '../contexts/ThemeContext';
 import { FileText, Calendar, Building, DollarSign, Eye, Download } from 'lucide-react';
 
 const ReceiptsList: React.FC = () => {

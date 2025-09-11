@@ -1,0 +1,971 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt Generation & Download Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .test-header {
+            background: #2563eb;
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .test-section {
+            margin-bottom: 30px;
+            padding: 15px;
+            border: 1px solid #e5e7eb;
+            border-radius: 6px;
+        }
+        .test-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+            padding: 8px;
+            background: #f9fafb;
+            border-radius: 4px;
+        }
+        .status {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            margin-right: 10px;
+            display: inline-block;
+        }
+        .status.pass { background-color: #10b981; }
+        .status.fail { background-color: #ef4444; }
+        .status.pending { background-color: #f59e0b; }
+        .test-button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        .test-button:hover {
+            background: #2563eb;
+        }
+        .test-results {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 6px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        .error {
+            color: #dc2626;
+            background: #fef2f2;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .success {
+            color: #059669;
+            background: #ecfdf5;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+        }
+        .receipt-preview {
+            border: 2px solid #000;
+            padding: 20px;
+            margin: 20px 0;
+            background: white;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-width: 400px;
+            margin: 20px auto;
+        }
+        .receipt-header {
+            text-align: center;
+            border-bottom: 1px dashed #000;
+            padding-bottom: 15px;
+            margin-bottom: 15px;
+        }
+        .receipt-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        .receipt-table th,
+        .receipt-table td {
+            padding: 5px;
+            text-align: left;
+            border-bottom: 1px dotted #000;
+        }
+        .receipt-table th {
+            font-weight: bold;
+            border-bottom: 1px solid #000;
+        }
+        .text-right {
+            text-align: right;
+        }
+        .totals {
+            border-top: 1px solid #000;
+            padding-top: 10px;
+            margin-top: 15px;
+        }
+        .totals div {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 3px;
+        }
+        .total-line {
+            font-weight: bold;
+            font-size: 14px;
+            border-top: 1px solid #000;
+            padding-top: 5px;
+            margin-top: 5px;
+        }
+        .demo-controls {
+            background: #f9fafb;
+            padding: 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 15px;
+        }
+        .items-list {
+            border: 1px solid #e5e7eb;
+            border-radius: 4px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .item-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr 50px;
+            gap: 10px;
+            padding: 10px;
+            border-bottom: 1px solid #f3f4f6;
+            align-items: center;
+        }
+        .item-row:last-child {
+            border-bottom: none;
+        }
+        .item-input {
+            padding: 5px;
+            border: 1px solid #d1d5db;
+            border-radius: 3px;
+            font-size: 12px;
+        }
+        .remove-item {
+            background: #ef4444;
+            color: white;
+            border: none;
+            padding: 5px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .format-options {
+            display: flex;
+            gap: 10px;
+            margin: 15px 0;
+        }
+        .format-option {
+            padding: 8px 16px;
+            border: 1px solid #d1d5db;
+            border-radius: 4px;
+            background: white;
+            cursor: pointer;
+        }
+        .format-option.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1>🧾 Receipt Generation & Download Test Suite</h1>
+        <p>Comprehensive testing for receipt creation, formatting, and download functionality</p>
+    </div>
+
+    <div class="test-container">
+        <h2>📋 Test Overview</h2>
+        <div id="test-summary">
+            <div class="test-item">
+                <span class="status pending" id="overall-status"></span>
+                <span>Overall Test Status: <span id="overall-text">Pending</span></span>
+            </div>
+            <div class="test-item">
+                <span>Total Tests: <span id="total-tests">0</span></span>
+            </div>
+            <div class="test-item">
+                <span>Passed: <span id="passed-tests">0</span></span>
+            </div>
+            <div class="test-item">
+                <span>Failed: <span id="failed-tests">0</span></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Receipt Generation Tests -->
+    <div class="test-container">
+        <h2>🧾 Receipt Generation Tests</h2>
+        
+        <div class="test-section">
+            <h3>Basic Receipt Creation</h3>
+            <button class="test-button" onclick="testBasicReceiptGeneration()">Test Basic Receipt</button>
+            <button class="test-button" onclick="testReceiptFormatting()">Test Receipt Formatting</button>
+            <button class="test-button" onclick="testReceiptCalculations()">Test Calculations</button>
+            <div id="basic-receipt-results" class="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Receipt Content Tests</h3>
+            <button class="test-button" onclick="testReceiptHeader()">Test Receipt Header</button>
+            <button class="test-button" onclick="testItemsTable()">Test Items Table</button>
+            <button class="test-button" onclick="testTotalsSection()">Test Totals Section</button>
+            <button class="test-button" onclick="testReceiptFooter()">Test Receipt Footer</button>
+            <div id="content-results" class="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Receipt Validation Tests</h3>
+            <button class="test-button" onclick="testRequiredFields()">Test Required Fields</button>
+            <button class="test-button" onclick="testDataValidation()">Test Data Validation</button>
+            <button class="test-button" onclick="testErrorHandling()">Test Error Handling</button>
+            <div id="validation-results" class="test-results"></div>
+        </div>
+    </div>
+
+    <!-- Download & Print Tests -->
+    <div class="test-container">
+        <h2>📥 Download & Print Tests</h2>
+        
+        <div class="test-section">
+            <h3>PDF Generation Tests</h3>
+            <button class="test-button" onclick="testPDFGeneration()">Test PDF Generation</button>
+            <button class="test-button" onclick="testPDFFormatting()">Test PDF Formatting</button>
+            <button class="test-button" onclick="testPDFDownload()">Test PDF Download</button>
+            <div id="pdf-results" class="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>Print Functionality Tests</h3>
+            <button class="test-button" onclick="testPrintDialog()">Test Print Dialog</button>
+            <button class="test-button" onclick="testPrintFormatting()">Test Print Formatting</button>
+            <button class="test-button" onclick="testPrintPreview()">Test Print Preview</button>
+            <div id="print-results" class="test-results"></div>
+        </div>
+
+        <div class="test-section">
+            <h3>File Export Tests</h3>
+            <button class="test-button" onclick="testHTMLExport()">Test HTML Export</button>
+            <button class="test-button" onclick="testJSONExport()">Test JSON Export</button>
+            <button class="test-button" onclick="testCSVExport()">Test CSV Export</button>
+            <div id="export-results" class="test-results"></div>
+        </div>
+    </div>
+
+    <!-- Interactive Receipt Builder -->
+    <div class="test-container">
+        <h2>🎮 Interactive Receipt Builder</h2>
+        
+        <div class="demo-controls">
+            <h3>Create Custom Receipt</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Receipt ID:</label>
+                    <input type="text" id="receipt-id" value="RCP-2025-001" placeholder="Receipt ID">
+                </div>
+                <div class="form-group">
+                    <label>Date:</label>
+                    <input type="date" id="receipt-date" value="">
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Supplier:</label>
+                    <input type="text" id="supplier-name" value="TechCorp Ltd" placeholder="Supplier name">
+                </div>
+                <div class="form-group">
+                    <label>Type:</label>
+                    <select id="receipt-type">
+                        <option value="Inbound">Inbound</option>
+                        <option value="Outbound">Outbound</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label>Items:</label>
+                <div class="items-list" id="items-list">
+                    <div class="item-row">
+                        <strong>Item Name</strong>
+                        <strong>Quantity</strong>
+                        <strong>Unit Price</strong>
+                        <strong>Total</strong>
+                        <strong>Action</strong>
+                    </div>
+                </div>
+                <button class="test-button" onclick="addReceiptItem()">Add Item</button>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label>Tax Rate (%):</label>
+                    <input type="number" id="tax-rate" value="8.5" step="0.1" min="0" max="100">
+                </div>
+                <div class="form-group">
+                    <label>Notes:</label>
+                    <textarea id="receipt-notes" rows="3" placeholder="Additional notes..."></textarea>
+                </div>
+            </div>
+            
+            <div class="format-options">
+                <div class="format-option active" onclick="selectFormat('html')" id="html-format">HTML</div>
+                <div class="format-option" onclick="selectFormat('pdf')" id="pdf-format">PDF</div>
+                <div class="format-option" onclick="selectFormat('print')" id="print-format">Print</div>
+            </div>
+            
+            <button class="test-button" onclick="generateCustomReceipt()">Generate Receipt</button>
+            <button class="test-button" onclick="downloadCustomReceipt()">Download Receipt</button>
+            <button class="test-button" onclick="clearReceiptForm()">Clear Form</button>
+        </div>
+        
+        <div class="receipt-preview" id="receipt-preview">
+            <div class="receipt-header">
+                <div style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">WAEL INVENTORY MANAGEMENT</div>
+                <div>123 Business Street, City, State 12345</div>
+                <div>Phone: (555) 123-4567 | Email: info@wael.com</div>
+                <div style="font-size: 16px; font-weight: bold; margin: 15px 0;">RECEIPT</div>
+            </div>
+            <div style="padding: 20px; text-align: center; color: #6b7280;">
+                Generate a receipt to see preview
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testResults = {
+            total: 0,
+            passed: 0,
+            failed: 0
+        };
+
+        let selectedFormat = 'html';
+        let receiptItems = [];
+        let generatedReceipt = null;
+
+        // Mock receipt data
+        const mockReceiptData = {
+            receiptId: 'RCP-2025-128',
+            date: '2025-01-15',
+            supplier: 'TechCorp Ltd',
+            type: 'Inbound',
+            items: [
+                { name: 'Laptop Computer', quantity: 2, unitPrice: 999.99, total: 1999.98 },
+                { name: 'Wireless Mouse', quantity: 5, unitPrice: 29.99, total: 149.95 },
+                { name: 'USB Cable', quantity: 10, unitPrice: 9.99, total: 99.90 }
+            ],
+            subtotal: 2249.83,
+            tax: 191.24,
+            total: 2441.07,
+            notes: 'Delivery scheduled for next week',
+            companyInfo: {
+                name: 'Wael Inventory Management',
+                address: '123 Business Street, City, State 12345',
+                phone: '(555) 123-4567',
+                email: 'info@wael.com'
+            }
+        };
+
+        function updateTestSummary() {
+            document.getElementById('total-tests').textContent = testResults.total;
+            document.getElementById('passed-tests').textContent = testResults.passed;
+            document.getElementById('failed-tests').textContent = testResults.failed;
+            
+            const overallStatus = document.getElementById('overall-status');
+            const overallText = document.getElementById('overall-text');
+            
+            if (testResults.total === 0) {
+                overallStatus.className = 'status pending';
+                overallText.textContent = 'Pending';
+            } else if (testResults.failed === 0) {
+                overallStatus.className = 'status pass';
+                overallText.textContent = 'All Tests Passed';
+            } else {
+                overallStatus.className = 'status fail';
+                overallText.textContent = `${testResults.failed} Tests Failed`;
+            }
+        }
+
+        function logTest(name, passed, details = '') {
+            testResults.total++;
+            if (passed) {
+                testResults.passed++;
+            } else {
+                testResults.failed++;
+            }
+            updateTestSummary();
+            console.log(`Test: ${name} - ${passed ? 'PASSED' : 'FAILED'}${details ? ' - ' + details : ''}`);
+        }
+
+        function logToResults(elementId, message, isError = false) {
+            const element = document.getElementById(elementId);
+            const timestamp = new Date().toLocaleTimeString();
+            const className = isError ? 'error' : 'success';
+            element.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+        }
+
+        // Receipt Generation Tests
+        function testBasicReceiptGeneration() {
+            try {
+                const receipt = generateReceiptHTML(mockReceiptData);
+                const hasReceiptId = receipt.includes(mockReceiptData.receiptId);
+                const hasSupplier = receipt.includes(mockReceiptData.supplier);
+                const hasItems = receipt.includes('Laptop Computer');
+                
+                logTest('Basic Receipt Generation', hasReceiptId && hasSupplier && hasItems);
+                logToResults('basic-receipt-results', `✅ Receipt generated with ID: ${mockReceiptData.receiptId}`);
+                logToResults('basic-receipt-results', `📄 Content length: ${receipt.length} characters`);
+            } catch (error) {
+                logTest('Basic Receipt Generation', false, error.message);
+                logToResults('basic-receipt-results', `❌ Receipt generation failed: ${error.message}`, true);
+            }
+        }
+
+        function testReceiptFormatting() {
+            const receipt = generateReceiptHTML(mockReceiptData);
+            const hasCSS = receipt.includes('@media print');
+            const hasTable = receipt.includes('<table');
+            const hasMonospaceFont = receipt.includes('Courier New');
+            
+            logTest('Receipt Formatting', hasCSS && hasTable && hasMonospaceFont);
+            logToResults('basic-receipt-results', `🎨 Formatting: ${hasCSS ? '✅' : '❌'} CSS, ${hasTable ? '✅' : '❌'} table, ${hasMonospaceFont ? '✅' : '❌'} font`);
+        }
+
+        function testReceiptCalculations() {
+            const subtotal = mockReceiptData.items.reduce((sum, item) => sum + item.total, 0);
+            const calculatedTax = subtotal * 0.085; // 8.5% tax
+            const calculatedTotal = subtotal + calculatedTax;
+            
+            const subtotalMatch = Math.abs(subtotal - mockReceiptData.subtotal) < 0.01;
+            const totalMatch = Math.abs(calculatedTotal - mockReceiptData.total) < 0.01;
+            
+            logTest('Receipt Calculations', subtotalMatch && totalMatch);
+            logToResults('basic-receipt-results', `🧮 Calculations: Subtotal ${subtotalMatch ? '✅' : '❌'}, Total ${totalMatch ? '✅' : '❌'}`);
+        }
+
+        function testReceiptHeader() {
+            const receipt = generateReceiptHTML(mockReceiptData);
+            const hasCompanyName = receipt.includes(mockReceiptData.companyInfo.name);
+            const hasAddress = receipt.includes(mockReceiptData.companyInfo.address);
+            const hasReceiptTitle = receipt.includes('RECEIPT');
+            
+            logTest('Receipt Header', hasCompanyName && hasAddress && hasReceiptTitle);
+            logToResults('content-results', `📋 Header: ${hasCompanyName ? '✅' : '❌'} company, ${hasAddress ? '✅' : '❌'} address, ${hasReceiptTitle ? '✅' : '❌'} title`);
+        }
+
+        function testItemsTable() {
+            const receipt = generateReceiptHTML(mockReceiptData);
+            const hasItemsTable = receipt.includes('items-table');
+            const hasAllItems = mockReceiptData.items.every(item => receipt.includes(item.name));
+            const hasQuantities = mockReceiptData.items.every(item => receipt.includes(item.quantity.toString()));
+            
+            logTest('Items Table', hasItemsTable && hasAllItems && hasQuantities);
+            logToResults('content-results', `📊 Items table: ${hasItemsTable ? '✅' : '❌'} structure, ${hasAllItems ? '✅' : '❌'} items, ${hasQuantities ? '✅' : '❌'} quantities`);
+        }
+
+        function testTotalsSection() {
+            const receipt = generateReceiptHTML(mockReceiptData);
+            const hasSubtotal = receipt.includes(`$${mockReceiptData.subtotal.toFixed(2)}`);
+            const hasTax = receipt.includes(`$${mockReceiptData.tax.toFixed(2)}`);
+            const hasTotal = receipt.includes(`$${mockReceiptData.total.toFixed(2)}`);
+            
+            logTest('Totals Section', hasSubtotal && hasTax && hasTotal);
+            logToResults('content-results', `💰 Totals: ${hasSubtotal ? '✅' : '❌'} subtotal, ${hasTax ? '✅' : '❌'} tax, ${hasTotal ? '✅' : '❌'} total`);
+        }
+
+        function testReceiptFooter() {
+            const receipt = generateReceiptHTML(mockReceiptData);
+            const hasThankYou = receipt.includes('Thank you');
+            const hasTimestamp = receipt.includes(new Date().getFullYear().toString());
+            const hasNotes = receipt.includes(mockReceiptData.notes);
+            
+            logTest('Receipt Footer', hasThankYou && hasTimestamp && hasNotes);
+            logToResults('content-results', `📝 Footer: ${hasThankYou ? '✅' : '❌'} thank you, ${hasTimestamp ? '✅' : '❌'} timestamp, ${hasNotes ? '✅' : '❌'} notes`);
+        }
+
+        function testRequiredFields() {
+            const incompleteData = { ...mockReceiptData };
+            delete incompleteData.receiptId;
+            
+            try {
+                const receipt = generateReceiptHTML(incompleteData);
+                const hasUndefined = receipt.includes('undefined');
+                
+                logTest('Required Fields', !hasUndefined);
+                logToResults('validation-results', `📋 Required fields: ${!hasUndefined ? '✅ Handled properly' : '❌ Missing fields not handled'}`);
+            } catch (error) {
+                logTest('Required Fields', true); // Error is expected
+                logToResults('validation-results', `✅ Required fields validation: Error thrown as expected`);
+            }
+        }
+
+        function testDataValidation() {
+            const invalidData = {
+                ...mockReceiptData,
+                items: [
+                    { name: '', quantity: -1, unitPrice: 'invalid', total: NaN }
+                ]
+            };
+            
+            try {
+                const receipt = generateReceiptHTML(invalidData);
+                const hasInvalidData = receipt.includes('NaN') || receipt.includes('invalid');
+                
+                logTest('Data Validation', !hasInvalidData);
+                logToResults('validation-results', `🔍 Data validation: ${!hasInvalidData ? '✅ Clean output' : '❌ Invalid data present'}`);
+            } catch (error) {
+                logTest('Data Validation', true);
+                logToResults('validation-results', `✅ Data validation: Error handling works`);
+            }
+        }
+
+        function testErrorHandling() {
+            try {
+                const receipt = generateReceiptHTML(null);
+                logTest('Error Handling', false, 'Should have thrown error');
+            } catch (error) {
+                logTest('Error Handling', true);
+                logToResults('validation-results', `🚨 Error handling: ${error.message}`);
+            }
+        }
+
+        // Download & Print Tests
+        function testPDFGeneration() {
+            try {
+                const pdfContent = generatePDFContent(mockReceiptData);
+                const hasPDFStructure = pdfContent.includes('<!DOCTYPE html>');
+                const hasPrintStyles = pdfContent.includes('@media print');
+                
+                logTest('PDF Generation', hasPDFStructure && hasPrintStyles);
+                logToResults('pdf-results', `📄 PDF generation: ${hasPDFStructure ? '✅' : '❌'} structure, ${hasPrintStyles ? '✅' : '❌'} print styles`);
+            } catch (error) {
+                logTest('PDF Generation', false, error.message);
+                logToResults('pdf-results', `❌ PDF generation failed: ${error.message}`, true);
+            }
+        }
+
+        function testPDFFormatting() {
+            const pdfContent = generatePDFContent(mockReceiptData);
+            const hasA4Size = pdfContent.includes('size: A4');
+            const hasMargins = pdfContent.includes('margin:');
+            const hasPageBreaks = pdfContent.includes('page-break');
+            
+            logTest('PDF Formatting', hasA4Size && hasMargins);
+            logToResults('pdf-results', `🎨 PDF formatting: ${hasA4Size ? '✅' : '❌'} A4 size, ${hasMargins ? '✅' : '❌'} margins`);
+        }
+
+        function testPDFDownload() {
+            try {
+                const blob = createPDFBlob(mockReceiptData);
+                const isBlob = blob instanceof Blob;
+                const correctType = blob.type === 'text/html';
+                
+                logTest('PDF Download', isBlob && correctType);
+                logToResults('pdf-results', `💾 PDF download: ${isBlob ? '✅' : '❌'} blob created, ${correctType ? '✅' : '❌'} correct type`);
+            } catch (error) {
+                logTest('PDF Download', false, error.message);
+                logToResults('pdf-results', `❌ PDF download failed: ${error.message}`, true);
+            }
+        }
+
+        function testPrintDialog() {
+            // Simulate print dialog test
+            const printSupported = typeof window.print === 'function';
+            const popupSupported = typeof window.open === 'function';
+            
+            logTest('Print Dialog', printSupported && popupSupported);
+            logToResults('print-results', `🖨️ Print support: ${printSupported ? '✅' : '❌'} print function, ${popupSupported ? '✅' : '❌'} popup support`);
+        }
+
+        function testPrintFormatting() {
+            const receipt = generateReceiptHTML(mockReceiptData);
+            const hasPrintCSS = receipt.includes('@media print');
+            const hasNoPrintClass = receipt.includes('no-print');
+            const hasPageSize = receipt.includes('size:');
+            
+            logTest('Print Formatting', hasPrintCSS && hasNoPrintClass);
+            logToResults('print-results', `🎨 Print formatting: ${hasPrintCSS ? '✅' : '❌'} print CSS, ${hasNoPrintClass ? '✅' : '❌'} no-print class`);
+        }
+
+        function testPrintPreview() {
+            try {
+                const previewHTML = generatePrintPreview(mockReceiptData);
+                const hasPreviewContent = previewHTML.includes('Print Preview');
+                const hasReceiptContent = previewHTML.includes(mockReceiptData.receiptId);
+                
+                logTest('Print Preview', hasPreviewContent && hasReceiptContent);
+                logToResults('print-results', `👁️ Print preview: ${hasPreviewContent ? '✅' : '❌'} preview UI, ${hasReceiptContent ? '✅' : '❌'} content`);
+            } catch (error) {
+                logTest('Print Preview', false, error.message);
+                logToResults('print-results', `❌ Print preview failed: ${error.message}`, true);
+            }
+        }
+
+        function testHTMLExport() {
+            const htmlContent = generateReceiptHTML(mockReceiptData);
+            const isValidHTML = htmlContent.includes('<!DOCTYPE html>') && htmlContent.includes('</html>');
+            const hasContent = htmlContent.includes(mockReceiptData.receiptId);
+            
+            logTest('HTML Export', isValidHTML && hasContent);
+            logToResults('export-results', `📄 HTML export: ${isValidHTML ? '✅' : '❌'} valid HTML, ${hasContent ? '✅' : '❌'} content`);
+        }
+
+        function testJSONExport() {
+            try {
+                const jsonContent = JSON.stringify(mockReceiptData, null, 2);
+                const isValidJSON = JSON.parse(jsonContent);
+                const hasAllFields = jsonContent.includes('receiptId') && jsonContent.includes('items');
+                
+                logTest('JSON Export', isValidJSON && hasAllFields);
+                logToResults('export-results', `📋 JSON export: ${isValidJSON ? '✅' : '❌'} valid JSON, ${hasAllFields ? '✅' : '❌'} all fields`);
+            } catch (error) {
+                logTest('JSON Export', false, error.message);
+                logToResults('export-results', `❌ JSON export failed: ${error.message}`, true);
+            }
+        }
+
+        function testCSVExport() {
+            try {
+                const csvContent = generateReceiptCSV(mockReceiptData);
+                const hasHeaders = csvContent.includes('Item,Quantity,Unit Price,Total');
+                const hasData = csvContent.includes('Laptop Computer');
+                
+                logTest('CSV Export', hasHeaders && hasData);
+                logToResults('export-results', `📊 CSV export: ${hasHeaders ? '✅' : '❌'} headers, ${hasData ? '✅' : '❌'} data`);
+            } catch (error) {
+                logTest('CSV Export', false, error.message);
+                logToResults('export-results', `❌ CSV export failed: ${error.message}`, true);
+            }
+        }
+
+        // Utility Functions
+        function generateReceiptHTML(data) {
+            if (!data) throw new Error('Receipt data is required');
+            
+            const { receiptId, date, supplier, items, subtotal, tax, total, notes, companyInfo } = data;
+            
+            return `
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <meta charset="utf-8">
+                    <title>Receipt ${receiptId}</title>
+                    <style>
+                        @media print {
+                            @page { size: A4 portrait; margin: 0.5in; }
+                            body { font-family: 'Courier New', monospace; font-size: 12px; }
+                            .no-print { display: none; }
+                        }
+                        body { font-family: 'Courier New', monospace; font-size: 12px; }
+                        .receipt { max-width: 400px; margin: 0 auto; border: 2px solid #000; padding: 20px; }
+                        .header { text-align: center; border-bottom: 1px dashed #000; padding-bottom: 15px; margin-bottom: 15px; }
+                        .items-table { width: 100%; border-collapse: collapse; margin: 15px 0; }
+                        .items-table th, .items-table td { padding: 5px; border-bottom: 1px dotted #000; }
+                        .totals { border-top: 1px solid #000; padding-top: 10px; margin-top: 15px; }
+                        .text-right { text-align: right; }
+                    </style>
+                </head>
+                <body>
+                    <div class="receipt">
+                        <div class="header">
+                            <div style="font-size: 18px; font-weight: bold;">${companyInfo?.name || 'Company Name'}</div>
+                            <div>${companyInfo?.address || ''}</div>
+                            <div>Phone: ${companyInfo?.phone || ''} | Email: ${companyInfo?.email || ''}</div>
+                            <div style="font-size: 16px; font-weight: bold; margin: 15px 0;">RECEIPT</div>
+                        </div>
+                        <div>
+                            <div><strong>Receipt #:</strong> ${receiptId}</div>
+                            <div><strong>Date:</strong> ${date}</div>
+                            <div><strong>Supplier:</strong> ${supplier}</div>
+                        </div>
+                        <table class="items-table">
+                            <thead>
+                                <tr>
+                                    <th>Item</th>
+                                    <th class="text-right">Qty</th>
+                                    <th class="text-right">Price</th>
+                                    <th class="text-right">Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${items.map(item => `
+                                    <tr>
+                                        <td>${item.name}</td>
+                                        <td class="text-right">${item.quantity}</td>
+                                        <td class="text-right">$${item.unitPrice.toFixed(2)}</td>
+                                        <td class="text-right">$${item.total.toFixed(2)}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        <div class="totals">
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Subtotal:</span>
+                                <span>$${subtotal.toFixed(2)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between;">
+                                <span>Tax:</span>
+                                <span>$${tax.toFixed(2)}</span>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; font-weight: bold; border-top: 1px solid #000; padding-top: 5px; margin-top: 5px;">
+                                <span>TOTAL:</span>
+                                <span>$${total.toFixed(2)}</span>
+                            </div>
+                        </div>
+                        ${notes ? `<div style="margin: 15px 0; padding: 10px; border: 1px dashed #000;"><strong>Notes:</strong><br>${notes}</div>` : ''}
+                        <div style="text-align: center; margin-top: 20px; border-top: 1px dashed #000; padding-top: 15px; font-size: 10px;">
+                            <div>Thank you for your business!</div>
+                            <div>Generated on ${new Date().toLocaleString()}</div>
+                        </div>
+                    </div>
+                    <div class="no-print" style="text-align: center; margin: 20px 0;">
+                        <button onclick="window.print()" style="background: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin: 0 5px;">🖨️ Print</button>
+                        <button onclick="window.close()" style="background: #6c757d; color: white; border: none; padding: 10px 20px; border-radius: 5px; margin: 0 5px;">❌ Close</button>
+                    </div>
+                </body>
+                </html>
+            `;
+        }
+
+        function generatePDFContent(data) {
+            return generateReceiptHTML(data);
+        }
+
+        function createPDFBlob(data) {
+            const htmlContent = generatePDFContent(data);
+            return new Blob([htmlContent], { type: 'text/html' });
+        }
+
+        function generatePrintPreview(data) {
+            return `<div>Print Preview</div>${generateReceiptHTML(data)}`;
+        }
+
+        function generateReceiptCSV(data) {
+            const headers = 'Item,Quantity,Unit Price,Total';
+            const rows = data.items.map(item => 
+                `"${item.name}",${item.quantity},${item.unitPrice.toFixed(2)},${item.total.toFixed(2)}`
+            ).join('\n');
+            return `${headers}\n${rows}`;
+        }
+
+        // Interactive Receipt Builder Functions
+        function selectFormat(format) {
+            selectedFormat = format;
+            document.querySelectorAll('.format-option').forEach(el => el.classList.remove('active'));
+            document.getElementById(`${format}-format`).classList.add('active');
+        }
+
+        function addReceiptItem() {
+            const itemId = Date.now();
+            const itemRow = document.createElement('div');
+            itemRow.className = 'item-row';
+            itemRow.innerHTML = `
+                <input type="text" class="item-input" placeholder="Item name" data-field="name" data-id="${itemId}">
+                <input type="number" class="item-input" placeholder="Qty" min="1" value="1" data-field="quantity" data-id="${itemId}">
+                <input type="number" class="item-input" placeholder="Price" step="0.01" min="0" data-field="unitPrice" data-id="${itemId}">
+                <input type="number" class="item-input" placeholder="Total" step="0.01" readonly data-field="total" data-id="${itemId}">
+                <button class="remove-item" onclick="removeReceiptItem(${itemId})">×</button>
+            `;
+            
+            document.getElementById('items-list').appendChild(itemRow);
+            
+            // Add event listeners for automatic calculation
+            const qtyInput = itemRow.querySelector('[data-field="quantity"]');
+            const priceInput = itemRow.querySelector('[data-field="unitPrice"]');
+            const totalInput = itemRow.querySelector('[data-field="total"]');
+            
+            function calculateTotal() {
+                const qty = parseFloat(qtyInput.value) || 0;
+                const price = parseFloat(priceInput.value) || 0;
+                totalInput.value = (qty * price).toFixed(2);
+            }
+            
+            qtyInput.addEventListener('input', calculateTotal);
+            priceInput.addEventListener('input', calculateTotal);
+        }
+
+        function removeReceiptItem(itemId) {
+            const itemRow = document.querySelector(`[data-id="${itemId}"]`).closest('.item-row');
+            itemRow.remove();
+        }
+
+        function generateCustomReceipt() {
+            const receiptData = {
+                receiptId: document.getElementById('receipt-id').value,
+                date: document.getElementById('receipt-date').value,
+                supplier: document.getElementById('supplier-name').value,
+                type: document.getElementById('receipt-type').value,
+                items: [],
+                subtotal: 0,
+                tax: 0,
+                total: 0,
+                notes: document.getElementById('receipt-notes').value,
+                companyInfo: mockReceiptData.companyInfo
+            };
+            
+            // Collect items
+            const itemRows = document.querySelectorAll('.item-row');
+            itemRows.forEach((row, index) => {
+                if (index === 0) return; // Skip header row
+                
+                const name = row.querySelector('[data-field="name"]')?.value;
+                const quantity = parseFloat(row.querySelector('[data-field="quantity"]')?.value) || 0;
+                const unitPrice = parseFloat(row.querySelector('[data-field="unitPrice"]')?.value) || 0;
+                const total = quantity * unitPrice;
+                
+                if (name && quantity > 0 && unitPrice > 0) {
+                    receiptData.items.push({ name, quantity, unitPrice, total });
+                }
+            });
+            
+            // Calculate totals
+            receiptData.subtotal = receiptData.items.reduce((sum, item) => sum + item.total, 0);
+            const taxRate = parseFloat(document.getElementById('tax-rate').value) / 100;
+            receiptData.tax = receiptData.subtotal * taxRate;
+            receiptData.total = receiptData.subtotal + receiptData.tax;
+            
+            generatedReceipt = receiptData;
+            
+            // Update preview
+            const preview = document.getElementById('receipt-preview');
+            if (receiptData.items.length > 0) {
+                preview.innerHTML = generateReceiptHTML(receiptData).match(/<div class="receipt">[\s\S]*<\/div>/)[0];
+            } else {
+                preview.innerHTML = '<div style="padding: 20px; text-align: center; color: #dc2626;">Please add at least one item</div>';
+            }
+        }
+
+        function downloadCustomReceipt() {
+            if (!generatedReceipt) {
+                alert('Please generate a receipt first');
+                return;
+            }
+            
+            let content, filename, mimeType;
+            
+            switch (selectedFormat) {
+                case 'html':
+                    content = generateReceiptHTML(generatedReceipt);
+                    filename = `receipt_${generatedReceipt.receiptId}.html`;
+                    mimeType = 'text/html';
+                    break;
+                case 'pdf':
+                    content = generatePDFContent(generatedReceipt);
+                    filename = `receipt_${generatedReceipt.receiptId}.html`;
+                    mimeType = 'text/html';
+                    break;
+                case 'print':
+                    const printWindow = window.open('', '_blank');
+                    printWindow.document.write(generateReceiptHTML(generatedReceipt));
+                    printWindow.document.close();
+                    printWindow.focus();
+                    return;
+            }
+            
+            const blob = new Blob([content], { type: mimeType });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = filename;
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function clearReceiptForm() {
+            document.getElementById('receipt-id').value = 'RCP-2025-001';
+            document.getElementById('receipt-date').value = '';
+            document.getElementById('supplier-name').value = '';
+            document.getElementById('receipt-type').value = 'Inbound';
+            document.getElementById('tax-rate').value = '8.5';
+            document.getElementById('receipt-notes').value = '';
+            
+            // Clear items except header
+            const itemsList = document.getElementById('items-list');
+            const itemRows = itemsList.querySelectorAll('.item-row');
+            itemRows.forEach((row, index) => {
+                if (index > 0) row.remove();
+            });
+            
+            // Reset preview
+            document.getElementById('receipt-preview').innerHTML = `
+                <div class="receipt-header">
+                    <div style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">WAEL INVENTORY MANAGEMENT</div>
+                    <div>123 Business Street, City, State 12345</div>
+                    <div>Phone: (555) 123-4567 | Email: info@wael.com</div>
+                    <div style="font-size: 16px; font-weight: bold; margin: 15px 0;">RECEIPT</div>
+                </div>
+                <div style="padding: 20px; text-align: center; color: #6b7280;">
+                    Generate a receipt to see preview
+                </div>
+            `;
+            
+            generatedReceipt = null;
+        }
+
+        // Initialize
+        updateTestSummary();
+        
+        // Set default date
+        document.getElementById('receipt-date').value = new Date().toISOString().split('T')[0];
+        
+        // Add initial item
+        addReceiptItem();
+        
+        // Auto-run some basic tests
+        setTimeout(() => {
+            logToResults('basic-receipt-results', '🚀 Receipt generation tests initialized');
+            logToResults('pdf-results', '🚀 PDF and download tests ready');
+            logToResults('export-results', '🚀 Export functionality tests ready');
+        }, 500);
+    </script>
+</body>
+</html>

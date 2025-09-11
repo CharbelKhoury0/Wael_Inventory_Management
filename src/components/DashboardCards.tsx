@@ -1,8 +1,8 @@
 import React from 'react';
 import { Package, Truck, Container, TrendingUp, AlertCircle, CheckCircle } from 'lucide-react';
-import { useTheme } from '../App';
+import { useTheme } from '../contexts/ThemeContext';
 
-const DashboardCards: React.FC = () => {
+const DashboardCards: React.FC = React.memo(() => {
   const { isDark } = useTheme();
   const cards = [
     {
@@ -109,6 +109,6 @@ const DashboardCards: React.FC = () => {
       })}
     </div>
   );
-};
+});
 
 export default DashboardCards;

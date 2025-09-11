@@ -1,11 +1,18 @@
 import React, { useState, createContext, useContext, useEffect } from 'react';
+import ErrorBoundary from './components/ErrorBoundary';
 import LoginPage from './components/LoginPage';
 import Dashboard from './components/Dashboard';
 import ItemsPage from './components/ItemsPage';
 import TransactionsPage from './components/TransactionsPage';
 import ReceiptsPage from './components/ReceiptsPage';
 import MovementsPage from './components/MovementsPage';
+import AnalyticsDashboard from './components/AnalyticsDashboard';
+import ReportingDashboard from './components/ReportingDashboard';
 import SettingsPage from './components/SettingsPage';
+import MobileNavigation from './components/MobileNavigation';
+import { NotificationProvider } from './contexts/NotificationContext';
+import { EnhancedThemeProvider, useTheme } from './contexts/ThemeContext';
+import { useTouchGestures } from './components/TouchGestureHandler';
 
 // Warehouse data structure
 const WAREHOUSE_DATA = {
@@ -38,20 +45,7 @@ const WAREHOUSE_DATA = {
   }
 };
 
-// Global Theme Context
-interface ThemeContextType {
-  isDark: boolean;
-  toggleTheme: () => void;
-  setTheme: (theme: 'light' | 'dark' | 'auto') => void;
-}
-
-const ThemeContext = createContext<ThemeContextType>({
-  isDark: false,
-  toggleTheme: () => {},
-  setTheme: () => {}
-});
-
-export const useTheme = () => useContext(ThemeContext);
+// Legacy theme context removed - now using EnhancedThemeProvider
 
 // Global Warehouse Context
 interface WarehouseInfo {
@@ -81,26 +75,24 @@ const WarehouseContext = createContext<WarehouseContextType>({
 export const useWarehouse = () => useContext(WarehouseContext);
 
 function App() {
+  const { isMobile, isTouch } = useTouchGestures();
+  
   const [isLoggedIn, setIsLoggedIn] = useState(() => {
     // Load login state from localStorage on app start
     const savedLoginState = localStorage.getItem('user-logged-in');
     return savedLoginState === 'true';
   });
   
+  const [isRefreshing, setIsRefreshing] = useState(false);
+  const [lastRefresh, setLastRefresh] = useState(Date.now());
+  
   const [currentPage, setCurrentPage] = useState(() => {
     // Load current page from localStorage on app start
     const savedPage = localStorage.getItem('current-page');
-    const validPages = ['dashboard', 'items', 'transactions', 'receipts', 'movements', 'settings'];
+    const validPages = ['dashboard', 'items', 'transactions', 'receipts', 'movements', 'analytics', 'settings'];
     return savedPage && validPages.includes(savedPage) ? savedPage : 'dashboard';
   });
-  const [isDark, setIsDark] = useState(() => {
-    // Load theme from localStorage on app start
-    const savedTheme = localStorage.getItem('app-theme');
-    if (savedTheme === 'dark') return true;
-    if (savedTheme === 'light') return false;
-    // Auto mode: check system preference
-    return window.matchMedia('(prefers-color-scheme: dark)').matches;
-  });
+  // Theme state is now managed by EnhancedThemeProvider
   
   // Warehouse state management
   const [currentWarehouse, setCurrentWarehouseState] = useState(() => {
@@ -120,34 +112,10 @@ function App() {
     }
   };
 
-  // Save theme to localStorage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('app-theme', isDark ? 'dark' : 'light');
-    // Apply theme to document root for global styling
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }, [isDark]);
-
   // Save login state to localStorage whenever it changes
   useEffect(() => {
     localStorage.setItem('user-logged-in', isLoggedIn.toString());
   }, [isLoggedIn]);
-
-  const toggleTheme = () => {
-    setIsDark(!isDark);
-  };
-
-  const setTheme = (theme: 'light' | 'dark' | 'auto') => {
-    if (theme === 'auto') {
-      const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-      setIsDark(prefersDark);
-    } else {
-      setIsDark(theme === 'dark');
-    }
-  };
 
   const handleLogin = () => {
     setIsLoggedIn(true);
@@ -161,54 +129,149 @@ function App() {
   };
 
   const handlePageChange = (page: string) => {
-    const validPages = ['dashboard', 'items', 'transactions', 'receipts', 'movements', 'settings'];
+    const validPages = ['dashboard', 'items', 'transactions', 'receipts', 'movements', 'analytics', 'settings'];
     if (validPages.includes(page)) {
       setCurrentPage(page);
       localStorage.setItem('current-page', page);
     }
   };
 
-  const themeClasses = {
-    container: isDark ? 'bg-gray-900' : 'bg-gray-50'
+  // Pull-to-refresh functionality
+  const handleRefresh = async () => {
+    if (isRefreshing) return;
+    
+    setIsRefreshing(true);
+    
+    try {
+      // Simulate data refresh with a delay
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Update last refresh timestamp
+      setLastRefresh(Date.now());
+      
+      // Force re-render of current page data
+      // This would typically trigger data fetching in real applications
+      console.log(`Refreshed ${currentPage} data at ${new Date().toLocaleTimeString()}`);
+      
+    } catch (error) {
+      console.error('Refresh failed:', error);
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
+
+  // Custom error handler for logging
+  const handleError = (error: Error, errorInfo: React.ErrorInfo) => {
+    // Log error details for debugging
+    console.error('Application Error:', {
+      error: error.message,
+      stack: error.stack,
+      componentStack: errorInfo.componentStack,
+      currentPage,
+      currentWarehouse,
+      timestamp: new Date().toISOString()
+    });
   };
 
   return (
-    <ThemeContext.Provider value={{ isDark, toggleTheme, setTheme }}>
-      <WarehouseContext.Provider value={{ 
-        currentWarehouse, 
-        warehouseData, 
-        allWarehouses: WAREHOUSE_DATA, 
-        setCurrentWarehouse 
-      }}>
-        <div className={`min-h-screen ${themeClasses.container}`}>
-          {!isLoggedIn ? (
-            <LoginPage onLogin={handleLogin} />
-          ) : (
-            <>
-              {currentPage === 'dashboard' && (
-                <Dashboard onLogout={handleLogout} onPageChange={handlePageChange} />
-              )}
-              {currentPage === 'items' && (
-                <ItemsPage onLogout={handleLogout} onPageChange={handlePageChange} />
-              )}
-              {currentPage === 'transactions' && (
-                <TransactionsPage onLogout={handleLogout} onPageChange={handlePageChange} />
-              )}
-              {currentPage === 'receipts' && (
-                <ReceiptsPage onLogout={handleLogout} onPageChange={handlePageChange} />
-              )}
-              {currentPage === 'movements' && (
-                <MovementsPage onLogout={handleLogout} onPageChange={handlePageChange} />
-              )}
-              {currentPage === 'settings' && (
-                <SettingsPage onLogout={handleLogout} onPageChange={handlePageChange} />
-              )}
-            </>
+    <ErrorBoundary onError={handleError}>
+      <NotificationProvider>
+        <EnhancedThemeProvider defaultTheme="light" enableTransitions={true}>
+          <WarehouseContext.Provider value={{ 
+            currentWarehouse, 
+            warehouseData, 
+            allWarehouses: WAREHOUSE_DATA, 
+            setCurrentWarehouse 
+          }}>
+            <AppContent 
+              isLoggedIn={isLoggedIn}
+              currentPage={currentPage}
+              isMobile={isMobile}
+              handleLogin={handleLogin}
+              handleLogout={handleLogout}
+              handlePageChange={handlePageChange}
+              handleRefresh={handleRefresh}
+              isRefreshing={isRefreshing}
+            />
+          </WarehouseContext.Provider>
+        </EnhancedThemeProvider>
+      </NotificationProvider>
+    </ErrorBoundary>
+  );
+};
+
+// Separate component to use theme context
+interface AppContentProps {
+  isLoggedIn: boolean;
+  currentPage: string;
+  isMobile: boolean;
+  handleLogin: () => void;
+  handleLogout: () => void;
+  handlePageChange: (page: string) => void;
+  handleRefresh: () => Promise<void>;
+  isRefreshing: boolean;
+}
+
+const AppContent: React.FC<AppContentProps> = ({
+  isLoggedIn,
+  currentPage,
+  isMobile,
+  handleLogin,
+  handleLogout,
+  handlePageChange,
+  handleRefresh,
+  isRefreshing
+}) => {
+  const { getThemeClasses } = useTheme();
+  const themeClasses = getThemeClasses();
+
+  return (
+    <div className={`min-h-screen ${themeClasses.container.primary} ${isMobile ? 'pb-20 safe-area-bottom' : ''}`}>
+      {!isLoggedIn ? (
+        <LoginPage onLogin={handleLogin} />
+      ) : (
+        <>
+          <div className={`${isMobile ? 'mobile-optimized' : ''}`}>
+            {currentPage === 'dashboard' && (
+              <Dashboard onLogout={handleLogout} onPageChange={handlePageChange} />
+            )}
+            {currentPage === 'items' && (
+              <ItemsPage onLogout={handleLogout} onPageChange={handlePageChange} />
+            )}
+            {currentPage === 'transactions' && (
+              <TransactionsPage onLogout={handleLogout} onPageChange={handlePageChange} />
+            )}
+            {currentPage === 'receipts' && (
+              <ReceiptsPage onLogout={handleLogout} onPageChange={handlePageChange} />
+            )}
+            {currentPage === 'movements' && (
+              <MovementsPage onLogout={handleLogout} onPageChange={handlePageChange} />
+            )}
+            {currentPage === 'analytics' && (
+              <ReportingDashboard 
+                onLogout={handleLogout} 
+                onPageChange={handlePageChange} 
+              />
+            )}
+            {currentPage === 'settings' && (
+              <SettingsPage onLogout={handleLogout} onPageChange={handlePageChange} />
+            )}
+          </div>
+          
+          {/* Mobile Navigation */}
+          {isMobile && (
+            <MobileNavigation
+              currentPage={currentPage}
+              onPageChange={handlePageChange}
+              onLogout={handleLogout}
+              onRefresh={handleRefresh}
+              isRefreshing={isRefreshing}
+            />
           )}
-        </div>
-      </WarehouseContext.Provider>
-     </ThemeContext.Provider>
-   );
- }
+        </>
+      )}
+    </div>
+  );
+};
 
 export default App;
