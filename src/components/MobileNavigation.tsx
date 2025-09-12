@@ -29,7 +29,7 @@ const MobileNavigation: React.FC<MobileNavigationProps> = ({
   onRefresh,
   isRefreshing = false
 }) => {
-  const { isDark } = useTheme();
+  const { isDark } = useEnhancedTheme();
   const [showSidebar, setShowSidebar] = useState(false);
   const [isVisible, setIsVisible] = useState(true);
   const [lastScrollY, setLastScrollY] = useState(0);

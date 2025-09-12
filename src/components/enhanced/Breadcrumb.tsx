@@ -101,7 +101,7 @@ const Breadcrumb: React.FC<BreadcrumbProps> = ({
       <ol className="flex items-center space-x-1">
         {processedItems.map((item, index) => {
           const isLast = index === processedItems.length - 1;
-          const isDisabled = item.disabled;
+          const isDisabled = ('disabled' in item && item.disabled) ?? false;
           const isEllipsis = item.label === '...';
           
           return (
@@ -254,7 +254,7 @@ export const DropdownBreadcrumb: React.FC<DropdownBreadcrumbProps> = ({
   dropdownMaxItems = 3,
   ...props
 }) => {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = React.useState(false);
   const { getThemeClasses } = useEnhancedTheme();
   const themeClasses = getThemeClasses();
   

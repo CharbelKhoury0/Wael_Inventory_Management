@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTheme } from '../contexts/ThemeContext';
+import { useEnhancedTheme } from '../contexts/ThemeContext';
 import { 
   LayoutDashboard, 
   Package, 
@@ -20,7 +20,7 @@ interface SidebarProps {
 }
 
 const Sidebar: React.FC<SidebarProps> = React.memo(({ isOpen, onClose, currentPage, onPageChange }) => {
-  const { isDark } = useTheme();
+  const { isDark } = useEnhancedTheme();
   const menuItems = [
     { icon: LayoutDashboard, label: 'Dashboard', key: 'dashboard' },
     { icon: Package, label: 'Items', key: 'items' },

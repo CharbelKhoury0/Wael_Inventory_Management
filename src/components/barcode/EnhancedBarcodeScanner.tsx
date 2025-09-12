@@ -578,7 +578,7 @@ const EnhancedBarcodeScanner: React.FC<EnhancedBarcodeScannerProps> = ({
       )}
       
       {/* CSS Animation */}
-      <style jsx>{`
+      <style>{`
         @keyframes scan-line {
           0% { top: 10%; }
           50% { top: 90%; }

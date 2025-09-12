@@ -236,7 +236,7 @@ const AppContent: React.FC<AppContentProps> = ({
               <Dashboard onLogout={handleLogout} onPageChange={handlePageChange} />
             )}
             {currentPage === 'items' && (
-              <ItemsPage />
+              <ItemsPage onLogout={handleLogout} onPageChange={handlePageChange} />
             )}
             {currentPage === 'transactions' && (
               <TransactionsPage onLogout={handleLogout} onPageChange={handlePageChange} />

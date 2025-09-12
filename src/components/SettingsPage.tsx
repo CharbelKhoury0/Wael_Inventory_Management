@@ -1,7 +1,7 @@
 import React, { useState, useEffect, createContext, useRef } from 'react';
 import Sidebar from './Sidebar';
 import TopNav from './TopNav';
-import { useTheme } from '../contexts/ThemeContext';
+import { useEnhancedTheme } from '../contexts/ThemeContext';
 import { useWarehouse } from '../App';
 import { 
   User, 
@@ -117,7 +117,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onLogout, onPageChange }) =
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [previewImage, setPreviewImage] = useState('');
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const { isDark, setTheme } = useTheme();
+  const { isDark, setTheme, currentTheme } = useEnhancedTheme();
   const { currentWarehouse, warehouseData, allWarehouses, setCurrentWarehouse } = useWarehouse();
   const [settings, setSettings] = useState(() => {
     // Clear any cached user settings to ensure correct Lebanese user information
@@ -157,7 +157,7 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onLogout, onPageChange }) =
       profilePicture: null,
       
       // System Preferences
-      theme: localStorage.getItem('app-theme') || 'light',
+      theme: currentTheme,
       language: 'en',
       emailNotifications: true,
       pushNotifications: false,
@@ -195,16 +195,13 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onLogout, onPageChange }) =
     localStorage.setItem('user-settings', JSON.stringify(settings));
   }, [settings]);
 
-  // Update theme when settings change
+  // Update theme only when user explicitly changes it in settings
+  // Removed automatic theme application to prevent unwanted theme switching
+
+  // Sync settings theme with actual theme state
   useEffect(() => {
-    if (settings.theme === 'dark') {
-      setTheme('dark');
-    } else if (settings.theme === 'light') {
-      setTheme('light');
-    } else {
-      setTheme('auto');
-    }
-  }, [settings.theme, setTheme]);
+    setSettings(prev => ({ ...prev, theme: currentTheme }));
+  }, [currentTheme]);
 
   // Update language
   useEffect(() => {
@@ -214,15 +211,9 @@ const SettingsPage: React.FC<SettingsPageProps> = ({ onLogout, onPageChange }) =
   const handleInputChange = (field: string, value: string | boolean | string[]) => {
     setSettings(prev => ({ ...prev, [field]: value }));
     
-    // Immediately apply theme changes
+    // Apply theme changes only when user explicitly changes theme setting
     if (field === 'theme') {
-      if (value === 'dark') {
-        setTheme('dark');
-      } else if (value === 'light') {
-        setTheme('light');
-      } else {
-        setTheme('auto');
-      }
+      setTheme(value as any); // Enhanced theme context handles the theme variant
     }
   };
 

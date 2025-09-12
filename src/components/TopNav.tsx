@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { useTheme } from '../contexts/ThemeContext';
+import { useEnhancedTheme } from '../contexts/ThemeContext';
 import { Menu, Bell, Settings, User, LogOut, Package, AlertTriangle, CheckCircle } from 'lucide-react';
 
 interface TopNavProps {
@@ -19,7 +19,7 @@ interface Notification {
 }
 
 const TopNav: React.FC<TopNavProps> = React.memo(({ onMenuClick, onLogout, onPageChange }) => {
-  const { isDark } = useTheme();
+  const { isDark } = useEnhancedTheme();
   const [showNotifications, setShowNotifications] = useState(false);
   const notificationRef = useRef<HTMLDivElement>(null);
   

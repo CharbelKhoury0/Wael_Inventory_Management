@@ -6,7 +6,7 @@ import TopNav from './TopNav';
 import DashboardCards from './DashboardCards';
 import TransactionsTable from './TransactionsTable';
 import ReceiptsList from './ReceiptsList';
-import AlertsSystem from './AlertsSystem';
+
 import { MapPin, User, Clock, BarChart3 } from 'lucide-react';
 
 interface DashboardProps {
@@ -76,14 +76,7 @@ const Dashboard: React.FC<DashboardProps> = ({ onLogout, onPageChange }) => {
 
             <DashboardCards />
 
-            {/* Alerts System */}
-            <div className="mt-8">
-              <AlertsSystem 
-                items={[]} 
-                movements={[]} 
-                containerContents={{}} 
-              />
-            </div>
+
 
             <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-8">
               <div className="xl:col-span-2">

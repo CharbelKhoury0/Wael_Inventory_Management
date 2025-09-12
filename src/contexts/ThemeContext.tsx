@@ -133,10 +133,31 @@ export const EnhancedThemeProvider: React.FC<EnhancedThemeProviderProps> = ({
   const themeConfig = getThemeConfig(currentTheme, customColors || undefined);
   const isDark = ['dark', 'corporate'].includes(currentTheme);
   
+  // Load theme preferences from localStorage
+  const loadThemePreferences = React.useCallback(() => {
+    try {
+      const saved = localStorage.getItem('enhanced-theme-preferences');
+      if (saved) {
+        const preferences: ThemePreferences = JSON.parse(saved);
+        setCurrentTheme(preferences.variant);
+        if (preferences.customColors) {
+          setCustomColorsState(preferences.customColors);
+        }
+      } else {
+        // No saved preferences, use defaultTheme (light)
+        setCurrentTheme(defaultTheme);
+      }
+    } catch (error) {
+      console.warn('Failed to load theme preferences:', error);
+      // On error, fallback to defaultTheme (light)
+      setCurrentTheme(defaultTheme);
+    }
+  }, [defaultTheme]);
+  
   // Load theme preferences on mount
   useEffect(() => {
     loadThemePreferences();
-  }, []);
+  }, [loadThemePreferences]);
   
   // Apply theme changes to DOM
   useEffect(() => {
@@ -210,22 +231,6 @@ export const EnhancedThemeProvider: React.FC<EnhancedThemeProviderProps> = ({
       customColors: customColors || undefined
     };
     localStorage.setItem('enhanced-theme-preferences', JSON.stringify(preferences));
-  };
-  
-  // Load theme preferences from localStorage
-  const loadThemePreferences = () => {
-    try {
-      const saved = localStorage.getItem('enhanced-theme-preferences');
-      if (saved) {
-        const preferences: ThemePreferences = JSON.parse(saved);
-        setCurrentTheme(preferences.variant);
-        if (preferences.customColors) {
-          setCustomColorsState(preferences.customColors);
-        }
-      }
-    } catch (error) {
-      console.warn('Failed to load theme preferences:', error);
-    }
   };
   
   // Apply theme transition effect

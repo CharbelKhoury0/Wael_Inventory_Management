@@ -321,7 +321,7 @@ export const MobileSelect: React.FC<MobileSelectProps> = ({
   error,
   disabled = false
 }) => {
-  const { isDark } = useTheme();
+  const { isDark } = useEnhancedTheme();
   const [isOpen, setIsOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState('');
 
@@ -461,7 +461,7 @@ export const MobileDatePicker: React.FC<MobileDatePickerProps> = ({
   minDate,
   maxDate
 }) => {
-  const { isDark } = useTheme();
+  const { isDark } = useEnhancedTheme();
   const [isOpen, setIsOpen] = useState(false);
 
   const handleDateChange = (date: string) => {

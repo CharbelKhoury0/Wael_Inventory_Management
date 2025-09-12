@@ -45,10 +45,11 @@ import ItemDetails from './ItemDetails';
 
 interface ItemsPageProps {
   onPageChange: (page: string) => void;
+  onLogout: () => void;
 }
 
-const ItemsPage: React.FC<ItemsPageProps> = ({ onPageChange }) => {
-  const { isDark } = useTheme();
+const ItemsPage: React.FC<ItemsPageProps> = ({ onPageChange, onLogout }) => {
+  const { isDark } = useEnhancedTheme();
   const { 
     items, 
     deletedItems,
@@ -318,7 +319,8 @@ const ItemsPage: React.FC<ItemsPageProps> = ({ onPageChange }) => {
       <div className="flex-1 flex flex-col overflow-hidden">
         <TopNav 
           onMenuClick={() => setSidebarOpen(true)}
-          title="Inventory Items"
+          onLogout={onLogout}
+          onPageChange={onPageChange}
         />
         
         <main className="flex-1 overflow-y-auto">
